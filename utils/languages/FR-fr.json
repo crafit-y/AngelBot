@@ -1,0 +1,86 @@
+{
+    "HELP": {
+        "title": "Aide",
+        "text1": "**Bienvenue sur la page d'aide du bot.**\nIci vous pouvez avoir de l'aide sur le paramétrage du bot et sur ces commandes.\n Si vous avez besoin d'aide plus pressise ou vous avez recement trouvé un bug n'esitez pas a rejoindre le <support-server>",
+        "support-server": "serveur discord du support",
+
+        "categoryList": {
+            "ADMINISTRATOR": {
+                "name": "Administrateur",
+                "name2": "administrateur",
+                "description": "Elles sont des commandes réservé aux modérateur du bot et ne sont pas publique."
+            },
+            "utils": {
+                "name": "Utilitaires",
+                "name2": "utilitaires",
+                "description": "Ce sont des commandes de géstion du serveur et des membres."
+            }
+        }
+    },
+
+    "COMMAND_MANAGER": {
+
+        "missingPermissions": "Pour pouvoir executer la commande **<commandName>**, il vous manques les permissions suivantes<permissionsSize>: <permissions>",
+        "permissionsList": {
+            "CREATE_INSTANT_INVITE": "Créer des invitations instantanés",
+            "KICK_MEMBERS": "Expulser des membres",
+            "BAN_MEMBERS": "Bannir des membres",
+            "ADMINISTRATOR": "Administrateur (tout)",
+            "MANAGE_CHANNELS": "Gérer les salons",
+            "MANAGE_GUILD": "Gérer le serveur",
+            "ADD_REACTIONS": "Ajouter de réactions",
+            "VIEW_AUDIT_LOG": "Voir les logs du serveurs",
+            "PRIORITY_SPEAKER": "Prioriter de parler",
+            "STREAM": "Passer au direct",
+            "VIEW_CHANNEL": "Voir les salons",
+            "SEND_MESSAGES": "Envoyer des messages",
+            "SEND_TTS_MESSAGES": "Envoyer des message TTS (Text-to-Speech)",
+            "MANAGE_MESSAGES": "Gérer les messages",
+            "EMBED_LINKS": "Liens dans des embeds",
+            "ATTACH_FILES": "Envoyer des fichiers",
+            "READ_MESSAGE_HISTORY": "Voir les ancients messages",
+            "MENTION_EVERYONE": "Mentionner tout le monde",
+            "USE_EXTERNAL_EMOJIS": "Utiliser des émojis externes",
+            "VIEW_GUILD_INSIGHTS": "???",
+            "CONNECT": "Se connecter (salon vocale)",
+            "SPEAK": "Parler (salon vocale)",
+            "MUTE_MEMBERS": "Rendre muet un utilisateur (salon vocale)",
+            "DEAFEN_MEMBERS": "Rendre sourd un utilisateur (salon vocale)",
+            "MOVE_MEMBERS": "Déplacer un utilisateur (salon vocale)",
+            "USE_VAD": "Utiliser la détection de voix automatique (salon vocale)",
+            "CHANGE_NICKNAME": "Changer de surnom",
+            "MANAGE_NICKNAMES": "Gérer les surnoms",
+            "MANAGE_ROLES": "Gérer les roles",
+            "MANAGE_WEBHOOKS": "Gérer les webhooks",
+            "MANAGE_EMOJIS_AND_STICKERS": "Gérers les émojis et stickers",
+            "USE_APPLICATION_COMMANDS": "Utiliser les commandes d'aplication (bot)",
+            "REQUEST_TO_SPEAK": "Demander pour parler",
+            "MANAGE_EVENTS": "Gérer les événements",
+            "MANAGE_THREADS": "Gérer les salons temporaires",
+            "USE_PUBLIC_THREADS": "Utiliser un salon temporaires",
+            "CREATE_PUBLIC_THREADS": "Créer un salon temporaires",
+            "USE_PRIVATE_THREADS": "Utiliser un salon temporaires privé",
+            "CREATE_PRIVATE_THREADS": "Créer un salon temporaires privé",
+            "USE_EXTERNAL_STICKERS": "Utiliser des stickers externes",
+            "SEND_MESSAGES_IN_THREADS": "Envoyer des messages dans un salon temporaires",
+            "START_EMBEDDED_ACTIVITIES": "???",
+            "MODERATE_MEMBERS": "Gérer les membres"
+        }
+        
+        
+    
+    },
+
+    "CLEAR": {
+
+        "invalidNumber": "Le nombre n'est pas valide, il doit être comprit entre 1 et 100.",
+        "bulkDeleteLimit": "Vous ne pouvez pas supprimer avec 'bulk' des messages de plus de 14 jours.",
+        "successfully": "Vous venez de supprimer <messages> <varMessage> dans <varChannel>.",
+        "noMessageToDelete": "Il n'y a aucun message a supprimer dans <varChannel>.",
+        "*message*": "message",
+        "*messages*": "messages",
+        "*thisChannel*": "ce salon",
+        "*otherChannel*": "le salon"
+    
+    }
+}

@@ -48,12 +48,12 @@ module.exports = {
         const winLossRatio = stats.losses !== 0 ? stats.wins / stats.losses : stats.wins;
         const array = [];
         array.push(`### ℹ️ Informations about ${member}:`);
-        array.push(`*Wins > \`${stats.wins ? stats.wins : "0"}\` | Looses > \`${stats.losses ? stats.losses : "0"}\` | Games played > \`${stats.gamesPlayed ? stats.gamesPlayed : "0"}\`*`)
-        array.push(`*Ratio > \`${winLossRatio.toString().substring(0, 4)}\`*`)
+        array.push(`*Wins ➔ \`${stats.wins ? stats.wins : "0"}\` | Looses ➔ \`${stats.losses ? stats.losses : "0"}\` | Games played ➔ \`${stats.gamesPlayed ? stats.gamesPlayed : "0"}\`*`)
+        array.push(`*Ratio ➔ \`${winLossRatio.toString().substring(0, 4)}\`*`)
         array.push(`### Party:`)
-        array.push(`> Position in leaderboard > \`#${position !== -1 ? position : "<Not found>"}\``)
-        array.push(`> Curently in the team > ${await getTheTeamOfTheUser(member) != null ? `**Team${await getTheTeamOfTheUser(member)}**` : "*Not in any teams*"}`)
-        array.push(`> Curently on live? > ${party && isOnLive && isOnLiveTeam ? "On live 🟢" : "Not on live 🔴"}`)
+        array.push(`> Position in leaderboard ➔ \`#${position !== -1 ? position : "<Not found>"}\``)
+        array.push(`> Curently in the team ➔ ${await getTheTeamOfTheUser(member) != null ? `**Team${await getTheTeamOfTheUser(member)}**` : "*Not in any teams*"}`)
+        array.push(`> Curently on live? ➔ ${party && isOnLive && isOnLiveTeam ? "On live 🟢" : "Not on live 🔴"}`)
         interaction.editReply({
           embeds: [await createEmbed.embed(array.join("\n"), Colors.Yellow)]
         })
@@ -69,13 +69,13 @@ module.exports = {
             const userId = userData.userId;
             const position = index + 1;
             let user = await client.users.fetch(userId);
-            let emoji = "";
+            let emoji = `\`#${position}\``;
             if (position <= 3) {
-              if (position === 1) emoji = "## " + EMOJIS.top1;
-              else if (position === 2) emoji = "## " + EMOJIS.top2;
-              else if (position === 3) emoji = "## " + EMOJIS.top3;
+              if (position === 1) emoji = EMOJIS.top1;
+              else if (position === 2) emoji = EMOJIS.top2;
+              else if (position === 3) emoji = EMOJIS.top3;
             }
-            const userString = `${emoji} \`#${position}\` - ${user} (\`${userData.wins} wins\`)`;
+            const userString = `${emoji} - ${user} (\`${userData.wins} wins\`)`;
             embedArray.push(userString);
           }
           const embed = await createEmbed.embed(embedArray.join("\n"), Colors.Yellow);

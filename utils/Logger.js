@@ -19,17 +19,17 @@ function command(content) {
   write(content, 'black', 'bgMagenta', 'CMD', 'green', false);
 }
 
-// function button(content) {
-//   write(content, 'white', 'bgMagenta', 'BTN', 'green', false);
-// }
+function button(content) {
+  write(content, 'white', 'bgMagenta', 'BTN', 'green', false);
+}
 
 // function modal(content) {
 //   write(content, 'white', 'bgMagenta', 'MDL', 'green', false);
 // }
 
-// function selectMenu(content) {
-//   write(content, 'white', 'bgMagenta', 'SLM', 'green', false);
-// }
+function selectMenu(content) {
+  write(content, 'white', 'bgMagenta', 'SLM', 'green', false);
+}
 
 function event(content) {
   write(content, 'black', 'bgGreen', 'EVT', 'green', false);
@@ -56,4 +56,4 @@ function write(content, tagColor, bgTagColor, tag, textColor, error = false) {
   stream.write(item);
 }
 
-module.exports = { error, warn, typo, command, event, client, clientError };
+module.exports = { error, warn, typo, command, event, client, clientError, button, selectMenu };

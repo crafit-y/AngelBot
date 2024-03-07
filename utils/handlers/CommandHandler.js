@@ -12,11 +12,11 @@ module.exports = async client => [
 
     if (!command.permissions) return Logger.warn(`Commande non-chargé: pas de permission ↓\nFichier -> ${commandFile}`);
 
-    command.permissions.forEach(permission => {
-      if (!permissionList.includes(permission)) {
-        return Logger.typo(`Commande non-chargé: erreur de typo sur la permission de la command ↓\nFichier -> ${commandFile}`);
-      }
-    });
+    // command.permissions.forEach(permission => {
+    //   if (!permissionList.includes(permission)) {
+    //     return Logger.typo(`Commande non-chargé: erreur de typo sur la permission de la command ↓\nFichier -> ${commandFile}`);
+    //   }
+    // });
 
 
     client.commands.set(command.name, command);

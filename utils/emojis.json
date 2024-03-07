@@ -6,5 +6,8 @@
   "top1": "🥇",
   "top2": "🥈",
   "top3": "🥉",
-  "leaderboard": "🏆"
+  "leaderboard": "🏆",
+  "onLive": "🟢",
+  "offLive": "🔴",
+  "teams": "👥"
 }

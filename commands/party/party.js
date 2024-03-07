@@ -1,9 +1,10 @@
-const { ApplicationCommandOptionType, Colors } = require('discord.js');
+const { ApplicationCommandOptionType, Colors, StringSelectMenuBuilder, StringSelectMenuOptionBuilder, ActionRowBuilder, PermissionFlagsBits } = require('discord.js');
 const fs = require('fs').promises;
 const { moveUsersToTheVoiceChannel } = require('../../Functions/Party/MoveUsers.js');
 const { disconnectAllUsers } = require('../../Functions/Party/disconnectAllUsers');
 const { getTheTeamOfTheUser } = require('../../Functions/Party/getTheTeamOfTheUser.js');
 const { getAllTheTeam } = require('../../Functions/Party/getAllTheTeam');
+const { updateUsersTeam } = require('../../Functions/Party/updateUsersTeam.js');
 const { createEmbed } = require('../../Functions/All/Embeds.js');
 const { teamManager } = require('../../Functions/Fs/TeamManager.js');
 const { liveManager } = require('../../Functions/Fs/LiveManager.js');
@@ -16,7 +17,7 @@ const IDS = require('../../utils/ids.json');
 module.exports = {
   name: 'party',
   description: 'create, start, end and stop a party',
-  permissions: ['ADMINISTRATOR'],
+  permissions: [PermissionFlagsBits.Administrator],
   options: [
     {
       name: 'create',
@@ -52,6 +53,23 @@ module.exports = {
       ]
     },
     {
+      name: 'get_team',
+      description: 'Update one user in the team',
+      type: ApplicationCommandOptionType.Subcommand,
+      options: [
+        {
+          name: 'team',
+          description: 'Select the team to update',
+          type: ApplicationCommandOptionType.String,
+          required: true,
+          choices: [
+            { name: 'Team 1', value: '1' },
+            { name: 'Team 2', value: '2' }
+          ]
+        },
+      ]
+    },
+    {
       name: 'get_user',
       description: 'To find out which team you\'re in',
       type: ApplicationCommandOptionType.Subcommand,
@@ -61,23 +79,6 @@ module.exports = {
           description: 'Select the user to check your team',
           type: ApplicationCommandOptionType.User,
           required: true,
-        },
-      ]
-    },
-    {
-      name: 'get_team',
-      description: 'Give all users in a team',
-      type: ApplicationCommandOptionType.Subcommand,
-      options: [
-        {
-          name: 'team',
-          description: 'Select the team to see all users in',
-          type: ApplicationCommandOptionType.String,
-          required: true,
-          choices: [
-            { name: 'Team 1', value: '1' },
-            { name: 'Team 2', value: '2' }
-          ]
         },
       ]
     },
@@ -93,7 +94,9 @@ module.exports = {
           required: true,
           choices: [
             { name: 'Team 1', value: '1' },
-            { name: 'Team 2', value: '2' }
+            { name: 'Team 2', value: '2' },
+            { name: 'Draw (add 1 win for all)', value: '3' },
+            { name: 'Null (does not count)', value: '4' }
           ]
         },
       ]
@@ -148,6 +151,7 @@ module.exports = {
           await partyManager.setCreated(true);
           await liveManager.setStatus(false);
           await category.permissionOverwrites.edit(IDS.OTHER_IDS.MEMBER_ROLE, { ViewChannel: true })
+          await category.setPosition(1);
           await endChannel.permissionOverwrites.edit(IDS.OTHER_IDS.MEMBER_ROLE, { ViewChannel: true })
 
           await interaction.editReply({ embeds: [await createEmbed.embed(`${EMOJIS.sageGood} Party created successfully !\n> You can now add players to differents teams`)] });
@@ -162,17 +166,20 @@ module.exports = {
       //START FUNCTION ----------------------------------------------------------------
       case 'start':
         if (!party) {
-          await interaction.editReply({ embeds: [await createEmbed.embed(`${EMOJIS.sageCry} The party is not created, you cant modify it !`, Colors.Red)] });
+          await interaction.editReply({ embeds: [await createEmbed.embed(`${EMOJIS.sageCry} The party is not created, you can't modify it !`, Colors.Red)] });
         } else if (!isOnLive && party) {
           await liveManager.setStatus(true);
 
           await logChannel.send({ embeds: [await createEmbed.log(interaction.member, `### ${EMOJIS.sagePeek} | LOGS - System\n> Party started !`)] });
 
           await interaction.editReply({ embeds: [await createEmbed.embed(`${EMOJIS.kjTwerk} Party is starting...`, Colors.Gold)] });
+
+          await new Promise(resolve => setTimeout(resolve, 1000)).catch(O_o => { console.log(O_o) });
           moveUsersToTheVoiceChannel(client, interaction, usersTeam1, IDS.CHANNELS.TEAM1, "1");
-          await new Promise(resolve => setTimeout(resolve, 4500));
+          await new Promise(resolve => setTimeout(resolve, 2500)).catch(O_o => { console.log(O_o) });
           moveUsersToTheVoiceChannel(client, interaction, usersTeam2, IDS.CHANNELS.TEAM2, "2");
-          await new Promise(resolve => setTimeout(resolve, 2500));
+          await new Promise(resolve => setTimeout(resolve, 2500)).catch(O_o => { console.log(O_o) });
+
           await interaction.editReply({ embeds: [await createEmbed.embed(`${EMOJIS.sageGood} Party is started`)] });
 
         } else {
@@ -183,7 +190,7 @@ module.exports = {
       //UPDATE_TEAM ----------------------------------------------------------------
       case 'update_teams':
         if (!party) {
-          await interaction.editReply({ embeds: [await createEmbed.embed(`${EMOJIS.sageCry} The party is not created, you cant modify it !`, Colors.Red)] });
+          await interaction.editReply({ embeds: [await createEmbed.embed(`${EMOJIS.sageCry} The party is not created, you can't modify it !`, Colors.Red)] });
         } else {
           try {
             if (!await teamManager.fileExists()) {
@@ -199,7 +206,7 @@ module.exports = {
             await teamManager.updateTeam(`team${team}`, newMembers);
             await interaction.editReply({ embeds: [await createEmbed.embed(`${EMOJIS.sageGood} Team${team} users\n> Successfully updated !`)] });
 
-            await logChannel.send({ embeds: [await createEmbed.log(interaction.member, `### ${EMOJIS.sagePeek} | LOGS - Team${team} Users updated\n> Added to team > <@${newMembers.join(">\n> Added to team > <@")}>`)] });
+            await logChannel.send({ embeds: [await createEmbed.log(interaction.member, `### ${EMOJIS.sagePeek} | LOGS - Team${team} Users updated\n> Added to team ➔ <@${newMembers.join(">\n> Added to team ➔ <@")}>`)] });
 
           } catch (error) {
             console.error('Error updating teams:', error);
@@ -210,23 +217,33 @@ module.exports = {
       //END FUNCTION ----------------------------------------------------------------
       case 'end':
         if (!party) {
-          await interaction.editReply({ embeds: [await createEmbed.embed(`${EMOJIS.sageCry} The party is not created, you cant modify it !`, Colors.Red)] });
+          await interaction.editReply({ embeds: [await createEmbed.embed(`${EMOJIS.sageCry} The party is not created, you can't modify it !`, Colors.Red)] });
         } else if (isOnLive && party) {
           await liveManager.setStatus(false);
 
-          await logChannel.send({ embeds: [await createEmbed.log(interaction.member, `### ${EMOJIS.sagePeek} | LOGS - System\n> Party ended !\n> Winner > **Team${winner}**`)] });
+          await logChannel.send({ embeds: [await createEmbed.log(interaction.member, `### ${EMOJIS.sagePeek} | LOGS - System\n> Party ended !\n> Winner ➔ **Team${winner}**`)] });
 
           await interaction.editReply({ embeds: [await createEmbed.embed(`${EMOJIS.kjTwerk} Party is ending...`, Colors.Gold)] });
-          const usersTeam1 = await teamManager.getTeamMembers('team1');
-          const usersTeam2 = await teamManager.getTeamMembers('team2');
-          await new Promise(resolve => setTimeout(resolve, 1000));
-          moveUsersToTheVoiceChannel(client, interaction, usersTeam1, IDS.CHANNELS.END, "1");
-          await new Promise(resolve => setTimeout(resolve, 4500));
-          moveUsersToTheVoiceChannel(client, interaction, usersTeam2, IDS.CHANNELS.END, "2");
-          await new Promise(resolve => setTimeout(resolve, 2500));
 
-          const winningTeam = winner === '1' ? usersTeam1 : usersTeam2;
-          const losingTeam = winner === '1' ? usersTeam2 : usersTeam1;
+          await new Promise(resolve => setTimeout(resolve, 1000)).catch(O_o => { console.log(O_o) });
+          moveUsersToTheVoiceChannel(client, interaction, usersTeam1, IDS.CHANNELS.END, "1");
+          await new Promise(resolve => setTimeout(resolve, 2500)).catch(O_o => { console.log(O_o) });
+          moveUsersToTheVoiceChannel(client, interaction, usersTeam2, IDS.CHANNELS.END, "2");
+          await new Promise(resolve => setTimeout(resolve, 2500)).catch(O_o => { console.log(O_o) });
+
+          let winningTeam;
+          let losingTeam;
+
+          if (winner >= 1 && winner <= 2) {
+            winningTeam = winner === '1' ? usersTeam1 : usersTeam2;
+            losingTeam = winner === '1' ? usersTeam2 : usersTeam1;
+          } else if (winner === 3) { // DRAW
+            winningTeam = allTeam;
+            losingTeam = [];
+          } else { //NULL
+            winningTeam = [];
+            losingTeam = [];
+          }
 
           await leaderBoard.updateTeamStats(winningTeam, losingTeam);
 
@@ -247,6 +264,7 @@ module.exports = {
           await liveManager.setStatus(false);
 
           await category.permissionOverwrites.edit(IDS.OTHER_IDS.MEMBER_ROLE, { ViewChannel: false })
+          await category.setPosition(4);
           await endChannel.permissionOverwrites.edit(IDS.OTHER_IDS.MEMBER_ROLE, { ViewChannel: false })
 
           if (disconnect_all_users === "yes") {
@@ -254,7 +272,6 @@ module.exports = {
             disconnectAllUsers(client, interaction, IDS.CHANNELS, allTeam);
 
           }
-
 
           await interaction.editReply({ embeds: [await createEmbed.embed(`${EMOJIS.sageGood} Party deleted !`)] });
           await logChannel.send({ embeds: [await createEmbed.log(interaction.member, `### ${EMOJIS.sagePeek} | LOGS - System\n> Party deleted !`)] });
@@ -266,17 +283,15 @@ module.exports = {
       //GET_USER FUNCTION ----------------------------------------------------------------
       case 'get_user':
         if (!party) {
-          await interaction.editReply({ embeds: [await createEmbed.embed(`${EMOJIS.sageCry} The party is not created, you cant check it !`, Colors.Red)] });
+          await interaction.editReply({ embeds: [await createEmbed.embed(`${EMOJIS.sageCry} The party is not created, you can't check it !`, Colors.Red)] });
         } else {
 
           const team = await getTheTeamOfTheUser(member);
 
           if (team === "0") {
             await interaction.editReply({ embeds: [await createEmbed.embed(`${EMOJIS.sageGood} ${member} is currently in the team 1 and 2\n> The user can't join two teams in same time, please modify it !`, Colors.Gold)] });
-          } else if (team === "1") {
-            await interaction.editReply({ embeds: [await createEmbed.embed(`${EMOJIS.sageGood} ${member} is currently in the team 1`)] });
-          } else if (team === "2") {
-            await interaction.editReply({ embeds: [await createEmbed.embed(`${EMOJIS.sageGood} ${member} is currently in the team 2`)] });
+          } else if (team === "1" || team === "2") {
+            await interaction.editReply({ embeds: [await createEmbed.embed(`${EMOJIS.sageGood} ${member} is currently in the **Team ${team}**`)] });
           } else {
             await interaction.editReply({ embeds: [await createEmbed.embed(`${EMOJIS.sageCry} ${member} is not on the list of participants !`, Colors.Red)] });
           }
@@ -287,14 +302,14 @@ module.exports = {
       //GET_TEAM FUNCTION ----------------------------------------------------------------
       case 'get_team':
         if (!party) {
-          await interaction.editReply({ embeds: [await createEmbed.embed(`${EMOJIS.sageCry} The party is not created, you cant check it !`, Colors.Red)] });
+          await interaction.editReply({ embeds: [await createEmbed.embed(`${EMOJIS.sageCry} The party is not created, you can't modify it !`, Colors.Red)] });
         } else {
 
-          const usersInTeam = await getAllTheTeam(team);
+          await updateUsersTeam(client, interaction, team)
 
-          await interaction.editReply({ embeds: [await createEmbed.embed(`${EMOJIS.sageGood} The list of participants in Team ${team}\n> User > ${usersInTeam != null ? `<@${usersInTeam.join(">\n> User > <@")}>` : "No users find !"}`)] });
         }
         break;
+
     }
   }
 };

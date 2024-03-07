@@ -5,7 +5,8 @@ const Logger = require('./utils/Logger');
 
 client.commands = new Collection();
 
-['CommandUtil', 'EventUtil'].forEach(handler => { require(`./utils/handlers/${handler}`)(client) });
+['buttons', 'commands', 'modals', 'selectMenus'].forEach(x => client[x] = new Collection());
+['CommandHandler', 'EventHandler', 'ButtonHandler', 'SelectMenuHandler'].forEach(handler => require(`./utils/handlers/${handler}`)(client));
 
 process.on('exit', code => { Logger.clientError(`Le processus s\'est arrêté avec le code: ${code} !`) });
 

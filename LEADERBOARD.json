@@ -1,1 +1,59 @@
-{"users":{"622781256349777941":{"wins":1,"losses":0,"gamesPlayed":1},"936911115739353138":{"wins":2,"losses":0,"gamesPlayed":2},"812325222866354196":{"wins":1,"losses":1,"gamesPlayed":2},"643117730312224789":{"wins":2,"losses":0,"gamesPlayed":2},"1002983650608033823":{"wins":1,"losses":0,"gamesPlayed":1},"391233346996535306":{"wins":0,"losses":2,"gamesPlayed":2},"427493371477622784":{"wins":0,"losses":2,"gamesPlayed":2},"368027771340849152":{"wins":0,"losses":1,"gamesPlayed":1},"271016830645043200":{"wins":0,"losses":1,"gamesPlayed":1},"541561819945500673":{"wins":1,"losses":1,"gamesPlayed":2},"1209190398350725252":{"wins":1,"losses":1,"gamesPlayed":1}}}
+{
+  "users": {
+    "622781256349777941": {
+      "wins": 1,
+      "losses": 0,
+      "gamesPlayed": 1
+    },
+    "936911115739353138": {
+      "wins": 2,
+      "losses": 0,
+      "gamesPlayed": 2
+    },
+    "812325222866354196": {
+      "wins": 1,
+      "losses": 1,
+      "gamesPlayed": 2
+    },
+    "643117730312224789": {
+      "wins": 2,
+      "losses": 0,
+      "gamesPlayed": 2
+    },
+    "1002983650608033823": {
+      "wins": 1,
+      "losses": 0,
+      "gamesPlayed": 1
+    },
+    "391233346996535306": {
+      "wins": 0,
+      "losses": 0,
+      "gamesPlayed": 0
+    },
+    "427493371477622784": {
+      "wins": 0,
+      "losses": 2,
+      "gamesPlayed": 2
+    },
+    "368027771340849152": {
+      "wins": 0,
+      "losses": 1,
+      "gamesPlayed": 1
+    },
+    "271016830645043200": {
+      "wins": 0,
+      "losses": 1,
+      "gamesPlayed": 1
+    },
+    "541561819945500673": {
+      "wins": 1,
+      "losses": 1,
+      "gamesPlayed": 2
+    },
+    "1209190398350725252": {
+      "wins": 1,
+      "losses": 1,
+      "gamesPlayed": 1
+    }
+  }
+}

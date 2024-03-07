@@ -1,11 +1,7 @@
 const { ApplicationCommandOptionType, Colors } = require('discord.js');
-const fs = require('fs').promises;
-const { moveUsersToTheVoiceChannel } = require('../../Functions/Party/MoveUsers.js');
 const { disconnectAllUsers } = require('../../Functions/Party/disconnectAllUsers');
-const { getTheTeamOfTheUser } = require('../../Functions/Party/getTheTeamOfTheUser.js');
 const { getAllTheTeam } = require('../../Functions/Party/getAllTheTeam');
 const { createEmbed } = require('../../Functions/All/Embeds.js');
-const { teamManager } = require('../../Functions/Fs/TeamManager.js');
 const { liveManager } = require('../../Functions/Fs/LiveManager.js');
 const { partyManager } = require('../../Functions/Fs/PartyManager.js');
 

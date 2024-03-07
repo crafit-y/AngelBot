@@ -1,0 +1,14 @@
+{
+    "CLEAR": {
+
+        "invalidNumber": "Invalid number, must be between 0 and 100.",
+        "bulkDeleteLimit": "You can only bulk delete messages that are under 14 days old.",
+        "successfully": "You have successfully deleted <messages> <varMessage> in <varChannel>.",
+        "noMessageToDelete": "No message to delete in <varChannel>.",
+        "*message*": "message",
+        "*messages*": "messages",
+        "*thisChannel*": "this channel",
+        "*otherChannel*": "the channel"
+    
+    }
+}
