@@ -1,3 +1,4 @@
+const { ApplicationCommandType } = require('discord.js');
 const { promisify } = require('util');
 const { glob } = require('glob');
 const pGlob = promisify(glob);
@@ -8,7 +9,7 @@ module.exports = async client => [
     const command = require(commandFile);
 
     if (!command.name) return Logger.warn(`Commande non-chargé: pas de nom ↓\nFichier -> ${commandFile}`);
-    if (!command.description && command.type != 'USER') return Logger.warn(`Commande non-chargé: pas de description ↓\nFichier -> ${commandFile}`);
+    if (!command.description && command.type != ApplicationCommandType.User && command.type != ApplicationCommandType.Message) return Logger.warn(`Commande non-chargé: pas de description ↓\nFichier -> ${commandFile}`);
 
     if (!command.permissions) return Logger.warn(`Commande non-chargé: pas de permission ↓\nFichier -> ${commandFile}`);
 
