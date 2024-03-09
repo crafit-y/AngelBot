@@ -1,7 +1,7 @@
 const { EmbedBuilder, Colors } = require('discord.js');
 const fs = require('fs').promises;
 const { createEmbed } = require('../All/Embeds');
-const EMOJIS = require('../../utils/emojis.json');
+const emojis = require('../../utils/emojis.json');
 const IDS = require('../../utils/ids.json');
 
 const teamManager = {

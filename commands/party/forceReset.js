@@ -1,11 +1,11 @@
 const { ApplicationCommandOptionType, Colors } = require('discord.js');
-const { disconnectAllUsers } = require('../../Functions/Party/disconnectAllUsers');
-const { createEmbed } = require('../../Functions/All/Embeds.js');
-const { teamManager } = require('../../Functions/Fs/TeamManager.js');
-const { liveManager } = require('../../Functions/Fs/LiveManager.js');
-const { partyManager } = require('../../Functions/Fs/PartyManager.js');
+const { disconnectAllUsers } = require('../../functions/Party/disconnectAllUsers');
+const { createEmbed } = require('../../functions/All/Embeds.js');
+const { teamManager } = require('../../functions/Fs/TeamManager.js');
+const { liveManager } = require('../../functions/Fs/LiveManager.js');
+const { partyManager } = require('../../functions/Fs/PartyManager.js');
 
-const EMOJIS = require('../../utils/emojis.json');
+const emojis = require('../../utils/emojis.json');
 const IDS = require('../../utils/ids.json');
 
 module.exports = {
@@ -29,6 +29,6 @@ module.exports = {
     await teamManager.updateTeam(`team1`, ARRAY);
     await teamManager.updateTeam(`team2`, ARRAY);
     
-    await interaction.editReply({ embeds: [await createEmbed.embed(`${EMOJIS.sagePeek} System\n > FORCE RESET`)] });
+    await interaction.editReply({ embeds: [await createEmbed.embed(`${emojis.info} System\n > FORCE RESET`)] });
   }
 };

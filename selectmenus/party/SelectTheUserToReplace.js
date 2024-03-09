@@ -1,10 +1,10 @@
 const { ActionRowBuilder, CommandInteraction, StringSelectMenuBuilder, UserSelectMenuBuilder, InteractionCollector, StringSelectMenuOptionBuilder, PermissionFlagsBits, Colors } = require('discord.js');
-const { updateUsersTeam } = require('../../Functions/Party/updateUsersTeam.js');
-const { getAllTheTeam } = require('../../Functions/Party/getAllTheTeam');
-const { teamManager } = require('../../Functions/Fs/TeamManager.js');
-const { createEmbed } = require('../../Functions/All/Embeds');
+const { updateUsersTeam } = require('../../functions/Party/updateUsersTeam.js');
+const { getAllTheTeam } = require('../../functions/Party/getAllTheTeam');
+const { teamManager } = require('../../functions/Fs/TeamManager.js');
+const { createEmbed } = require('../../functions/All/Embeds');
 
-const EMOJIS = require('../../utils/emojis.json');
+const emojis = require('../../utils/emojis.json');
 
 //const SELECT_USER_CUSTOM_ID = "selecttheusertoreplace";
 const USER_CUSTOM_ID = "selecttheusertoreplace-users";
@@ -12,7 +12,7 @@ const USER_CUSTOM_ID = "selecttheusertoreplace-users";
 module.exports = {
   name: 'selecttheusertoreplace',
   permissions: [PermissionFlagsBits.Administrator],
-  async runInteraction(client, interaction) {
+  async run(client, interaction) {
     try {
       const SUPRA_ID = interaction.values[0];
       const userId = SUPRA_ID.substring(2);

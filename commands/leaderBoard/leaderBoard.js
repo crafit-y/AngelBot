@@ -1,12 +1,12 @@
 const { ApplicationCommandOptionType, Colors } = require('discord.js');
-const { getTheTeamOfTheUser } = require('../../Functions/Party/getTheTeamOfTheUser');
-const { getAllTheTeam } = require('../../Functions/Party/getAllTheTeam');
-const { createEmbed } = require('../../Functions/All/Embeds.js');
-const { liveManager } = require('../../Functions/Fs/LiveManager.js');
-const { partyManager } = require('../../Functions/Fs/PartyManager.js');
-const { leaderBoard } = require('../../Functions/Fs/leaderBoard.js');
+const { getTheTeamOfTheUser } = require('../../functions/Party/getTheTeamOfTheUser');
+const { getAllTheTeam } = require('../../functions/Party/getAllTheTeam');
+const { createEmbed } = require('../../functions/All/Embeds.js');
+const { liveManager } = require('../../functions/Fs/LiveManager.js');
+const { partyManager } = require('../../functions/Fs/PartyManager.js');
+const { leaderBoard } = require('../../functions/Fs/leaderBoard.js');
 
-const EMOJIS = require('../../utils/emojis.json');
+const emojis = require('../../utils/emojis.json');
 const IDS = require('../../utils/ids.json');
 
 module.exports = {
@@ -63,7 +63,7 @@ module.exports = {
         try {
           const topUsers = await leaderBoard.generateLeaderboard();
           const embedArray = [];
-          embedArray.push(`# ${EMOJIS.leaderboard} Leaderboard`);
+          embedArray.push(`# ${emojis.leaderboard} Leaderboard`);
 
           for (const [index, userData] of topUsers.sortedUsers.entries()) {
             const userId = userData.userId;
@@ -71,9 +71,9 @@ module.exports = {
             let user = await client.users.fetch(userId);
             let emoji = `\`#${position}\``;
             if (position <= 3) {
-              if (position === 1) emoji = EMOJIS.top1;
-              else if (position === 2) emoji = EMOJIS.top2;
-              else if (position === 3) emoji = EMOJIS.top3;
+              if (position === 1) emoji = emojis.top1;
+              else if (position === 2) emoji = emojis.top2;
+              else if (position === 3) emoji = emojis.top3;
             }
             const userString = `${emoji} - ${user} (\`${userData.wins} wins\`)`;
             embedArray.push(userString);

@@ -24,7 +24,7 @@ module.exports = {
 
       if (!interaction.member.permissions.has([button.permissions])) return interaction.reply({ content: `Vous n'avez pas la permission d'executer ce boutton !`, ephemeral: true })
 
-      button.runInteraction(client, interaction);
+      button.run(client, interaction);
 
       // MODALS -----------------------------------
     } else if (interaction.isModalSubmit() && client.modals.get(interaction.customId)) {
@@ -33,7 +33,7 @@ module.exports = {
 
       if (!modal) return interaction.reply("This modal is not work...");
 
-      modal.runInteraction(client, interaction);
+      modal.run(client, interaction);
 
       // SELECTMENUS -----------------------------------
     }
@@ -46,7 +46,7 @@ module.exports = {
       
       if (!interaction.member.permissions.has([selectMenu.permissions])) return interaction.reply({ content: `Vous n'avez pas la permission d'executer ce select menu !`, ephemeral: true })
       
-      selectMenu.runInteraction(client, interaction);
+      selectMenu.run(client, interaction);
     } else if (interaction.isStringSelectMenu() && client.selectMenus.get(interaction.customId)) {
 
 
@@ -56,7 +56,7 @@ module.exports = {
       
       if (!interaction.member.permissions.has([selectMenu.permissions])) return interaction.reply({ content: `Vous n'avez pas la permission d'utiliser ce select menu !`, ephemeral: true })
 
-      selectMenu.runInteraction(client, interaction);
+      selectMenu.run(client, interaction);
     }
 
   }

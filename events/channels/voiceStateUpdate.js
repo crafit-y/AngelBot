@@ -1,5 +1,5 @@
 const Logger = require('../../utils/Logger');
-const { handleUserStatus } = require('../../Functions/Party/handleUserStatus');
+const { handleUserStatus } = require('../../functions/Party/handleUserStatus');
 
 module.exports = {
   name: 'voiceStateUpdate',

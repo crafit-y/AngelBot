@@ -15,15 +15,15 @@ async function moveUsersToTheVoiceChannel(client, interaction, users, channelId,
 
       if (member.voice.channel !== null) {
         await member.voice.setChannel(channel);
-        actions.push(`${emojis.sageGood} - User moved ➔ ${member}`);
+        actions.push(`${emojis.success} - User moved ➔ ${member}`);
       } else {
-        actions.push(`${emojis.sageCry} - User not connected on a voice channel ➔ ${member}`);
+        actions.push(`${emojis.error} - User not connected on a voice channel ➔ ${member}`);
       }
 
       await new Promise(resolve => setTimeout(resolve, 500)).catch(O_o => { console.log(O_o) });
     }
 
-    guild.channels.cache.get(IDS.CHANNELS.LOG).send({ embeds: [await createEmbed.log(interaction.member, `### ${emojis.sagePeek} | LOGS - Team${team} is moving to > ${channel}\n> ${actions.join("\n> ")}`)] });
+    guild.channels.cache.get(IDS.CHANNELS.LOG).send({ embeds: [await createEmbed.log(interaction.member, `### ${emojis.info} | LOGS - Team${team} is moving to > ${channel}\n> ${actions.join("\n> ")}`)] });
 
   } catch (error) {
     console.error('Error moving users to voice channel:', error);

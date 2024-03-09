@@ -1,9 +1,13 @@
 const { Client, Collection } = require('discord.js');
+const { Player } = require('discord-player');
 const dotenv = require('dotenv'); dotenv.config();
-const client = new Client({ intents: 3276799 });
 const Logger = require('./utils/Logger');
 
-client.commands = new Collection();
+const client = new Client({ intents: 3276799 });
+const player = new Player(client);
+
+client.player = player;
+player.extractors.loadDefault();
 
 ['buttons', 'commands', 'modals', 'selectMenus'].forEach(x => client[x] = new Collection());
 ['CommandHandler', 'EventHandler', 'ButtonHandler', 'SelectMenuHandler'].forEach(handler => require(`./utils/handlers/${handler}`)(client));

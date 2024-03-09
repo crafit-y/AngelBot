@@ -1,8 +1,8 @@
 const Logger = require('../../utils/Logger');
-const { liveManager } = require('../../Functions/Fs/LiveManager.js');
-const { partyManager } = require('../../Functions/Fs/PartyManager.js');
+const { liveManager } = require('../../functions/Fs/LiveManager.js');
+const { partyManager } = require('../../functions/Fs/PartyManager.js');
 
-const EMOJIS = require('../../utils/emojis.json');
+const emojis = require('../../utils/emojis.json');
 const IDS = require('../../utils/ids.json');
 const { ActivityType } = require('discord.js');
 
@@ -25,9 +25,9 @@ module.exports = {
 
       if (channel) {
 
-        const channelName = isOnLive != false ? `${EMOJIS.onLive} 𝑂𝑛 𝑙𝑖𝑣𝑒` : `${EMOJIS.offLive} 𝑂𝑓𝑓 𝑙𝑖𝑣𝑒`;
-        const statusOnParty = isOnLive != false ? `${EMOJIS.onLive} 𝑃𝑎𝑟𝑡𝑦 𝑖𝑛 𝑝𝑟𝑜𝑔𝑟𝑒𝑠𝑠...` : ``;
-        const statusOnLive = party != false && isOnLive != true ? `${EMOJIS.away} 𝐴 𝑝𝑎𝑟𝑡𝑦 ℎ𝑎𝑠 𝑏𝑒𝑒𝑛 𝑐𝑟𝑒𝑎𝑡𝑒𝑑` : ``;
+        const channelName = isOnLive != false ? `${emojis.onLive} 𝑂𝑛 𝑙𝑖𝑣𝑒` : `${emojis.offLive} 𝑂𝑓𝑓 𝑙𝑖𝑣𝑒`;
+        const statusOnParty = isOnLive != false ? `${emojis.onLive} 𝑃𝑎𝑟𝑡𝑦 𝑖𝑛 𝑝𝑟𝑜𝑔𝑟𝑒𝑠𝑠...` : ``;
+        const statusOnLive = party != false && isOnLive != true ? `${emojis.away} 𝐴 𝑝𝑎𝑟𝑡𝑦 ℎ𝑎𝑠 𝑏𝑒𝑒𝑛 𝑐𝑟𝑒𝑎𝑡𝑒𝑑` : ``;
 
         if (channelName != channel.name) {
 

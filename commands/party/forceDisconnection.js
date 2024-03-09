@@ -1,11 +1,11 @@
 const { ApplicationCommandOptionType, Colors } = require('discord.js');
-const { disconnectAllUsers } = require('../../Functions/Party/disconnectAllUsers');
-const { getAllTheTeam } = require('../../Functions/Party/getAllTheTeam');
-const { createEmbed } = require('../../Functions/All/Embeds.js');
-const { liveManager } = require('../../Functions/Fs/LiveManager.js');
-const { partyManager } = require('../../Functions/Fs/PartyManager.js');
+const { disconnectAllUsers } = require('../../functions/Party/disconnectAllUsers');
+const { getAllTheTeam } = require('../../functions/Party/getAllTheTeam');
+const { createEmbed } = require('../../functions/All/Embeds.js');
+const { liveManager } = require('../../functions/Fs/LiveManager.js');
+const { partyManager } = require('../../functions/Fs/PartyManager.js');
 
-const EMOJIS = require('../../utils/emojis.json');
+const emojis = require('../../utils/emojis.json');
 const IDS = require('../../utils/ids.json');
 
 module.exports = {
@@ -38,16 +38,16 @@ module.exports = {
 
         disconnectAllUsers(client, interaction, IDS.CHANNELS, allTeam);
 
-        await interaction.editReply({ embeds: [await createEmbed.embed(`${EMOJIS.sageGood} Force disconnect - Successfully updated !\n> ByPass verifications > ${byPass === "no" ? "False" : "True"}`)] });
+        await interaction.editReply({ embeds: [await createEmbed.embed(`${emojis.success} Force disconnect - Successfully updated !\n> ByPass verifications > ${byPass === "no" ? "False" : "True"}`)] });
 
       } else {
-        await interaction.editReply({ embeds: [await createEmbed.embed(`${EMOJIS.sageCry} The party is on live !`, Colors.Red)] });
+        await interaction.editReply({ embeds: [await createEmbed.embed(`${emojis.error} The party is on live !`, Colors.Red)] });
       }
     } else {
 
       disconnectAllUsers(client, interaction, IDS.CHANNELS, allTeam);
 
-      await interaction.editReply({ embeds: [await createEmbed.embed(`${EMOJIS.sageGood} Force disconnect - Successfully updated !\n> ByPass verifications > ${byPass === "no" ? "False" : "True"}`)] });
+      await interaction.editReply({ embeds: [await createEmbed.embed(`${emojis.success} Force disconnect - Successfully updated !\n> ByPass verifications > ${byPass === "no" ? "False" : "True"}`)] });
     }
 
 

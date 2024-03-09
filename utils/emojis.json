@@ -1,14 +1,28 @@
 {
-  "kjTwerk": "<a:killjoyTwerk:1204799979672043600>",
-  "sageGood": "<:sageOk:1204877028579344475>",
-  "sagePeek": "<:sagePeek:1204795238066036827>",
-  "sageCry": "<:sageCry:1204795201290371092>",
+  "loading": "<a:killjoyTwerk:1204799979672043600>",
+  "success": "<:sageOk:1204877028579344475>",
+  "info": "<:sagePeek:1204795238066036827>",
+  "error": "<:sageCry:1204795201290371092>",
+  "trash": "<:sageTrash:1204795264217391114>",
+  
+  "leaderboard": "🏆",
+  "teams": "👥",
   "top1": "🥇",
   "top2": "🥈",
   "top3": "🥉",
-  "leaderboard": "🏆",
+  
   "onLive": "🟢",
   "offLive": "🔴",
   "away": "🟠",
-  "teams": "👥"
+  
+  "music": "<a:among_usRaimbow:1207107123591258183>",
+  "music-loopTrack": "🔂",
+  "music-loopQueue": "🔁",
+  "music-loopInfinitQueue": "♾️",
+  "music-stop": "⏹️",
+  "music-disconect": "⏏️",
+  "music-pause": "⏸️",
+  "music-resume": "▶️",
+  "music-skip": "⏩",
+  "music-back": "⏪"
 }

@@ -1,7 +1,7 @@
 const { ChannelSelectMenuBuilder, ActionRowBuilder, InteractionCollector } = require('discord.js');
 const { createEmbed } = require('../All/Embeds');
 const { WebHookBuilder } = require('../All/WebHook');
-const EMOJIS = require('../../utils/emojis.json');
+const emojis = require('../../utils/emojis.json');
 const IDS = require('../../utils/ids.json');
 
 const MessageTransfer = {
@@ -51,7 +51,7 @@ const MessageTransfer = {
       }
     } catch (error) {
       console.error(error);
-      await interaction.editReply({ embeds: [await createEmbed.embed(`${EMOJIS.sageCry} Error : \`${error.message}\``, Colors.Red)], ephemeral: true });
+      await interaction.editReply({ embeds: [await createEmbed.embed(`${emojis.error} Error : \`${error.message}\``, Colors.Red)], ephemeral: true });
     }
   },
 };
@@ -77,14 +77,14 @@ async function transferMessage(client, message, channel, interaction, row) {
       files: message.attachments.map(attachment => attachment.url)
     });
 
-    await interaction.editReply({ embeds: [await createEmbed.embed(`${EMOJIS.sageGood} The [message](${message.url}) of ${message.author} has been transfered to ${channel}.`)], components: [row], ephemeral: true });
+    await interaction.editReply({ embeds: [await createEmbed.embed(`${emojis.success} The [message](${message.url}) of ${message.author} has been transfered to ${channel}.`)], components: [row], ephemeral: true });
 
-    await message.reply({ content: `${message.author}`, embeds: [await createEmbed.embed(`${EMOJIS.sageGood} Your [message](${message.url}) has been transfered to ${channel}.`)] })
+    await message.reply({ content: `${message.author}`, embeds: [await createEmbed.embed(`${emojis.success} Your [message](${message.url}) has been transfered to ${channel}.`)] })
 
     return newMessage;
   } catch (error) {
     console.error(error);
-    await interaction.editReply({ embeds: [await createEmbed.embed(`${EMOJIS.sageCry} Error : \`${error.message}\``, Colors.Red)], ephemeral: true });
+    await interaction.editReply({ embeds: [await createEmbed.embed(`${emojis.error} Error : \`${error.message}\``, Colors.Red)], ephemeral: true });
     throw error;
   }
 }

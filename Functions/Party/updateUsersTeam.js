@@ -1,7 +1,7 @@
 const { StringSelectMenuOptionBuilder, StringSelectMenuBuilder, ActionRowBuilder, ButtonBuilder, ButtonStyle } = require('discord.js');
-const { getAllTheTeam } = require('../../Functions/Party/getAllTheTeam');
+const { getAllTheTeam } = require('../../functions/Party/getAllTheTeam');
 const { createEmbed } = require('../All/Embeds');
-const EMOJIS = require('../../utils/emojis.json');
+const emojis = require('../../utils/emojis.json');
 
 async function updateUsersTeam(client, interaction, team, replyed = false, updated = 0) {
   const usersInTeam = await getAllTheTeam(team);
@@ -28,12 +28,12 @@ async function updateUsersTeam(client, interaction, team, replyed = false, updat
     .setStyle(ButtonStyle.Success);
   const team1Button = new ButtonBuilder()
     .setCustomId("updateusersteam-team1")
-    .setEmoji(EMOJIS.teams)
+    .setEmoji(emojis.teams)
     .setLabel("Team 1")
     .setStyle(ButtonStyle.Secondary);
   const team2Button = new ButtonBuilder()
     .setCustomId("updateusersteam-team2")
-    .setEmoji(EMOJIS.teams)
+    .setEmoji(emojis.teams)
     .setLabel("Team 2")
     .setStyle(ButtonStyle.Secondary);
 
@@ -49,7 +49,7 @@ async function updateUsersTeam(client, interaction, team, replyed = false, updat
     return `<@${user}>${index + 1 === updated ? ' *(✏️ updated)*' : ''}`;
   }).join('\n> User ➔');
 
-  const embedContent = `### ${EMOJIS.teams} The list of participants in Team ${team}\n> User ➔ ${userList}`;
+  const embedContent = `### ${emojis.teams} The list of participants in Team ${team}\n> User ➔ ${userList}`;
 
   if (replyed) {
     await interaction.message.edit({
