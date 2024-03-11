@@ -6,43 +6,36 @@ const { RefreshEmbed } = require("../../functions/music/RefreshTheEmbed");
 
 module.exports = {
     name: 'queuelistembed-back',
+    permissions: [],
     async run(client, interaction) {
-
         try {
-
             const queue = useQueue(interaction.guild.id);
-
             QueueErrorCheck(interaction, !queue);
 
-            const EmbedToUpdate = interaction.message.embeds[0]
-            const embedThumbnail = EmbedToUpdate.thumbnail.url;
-            const embedTitle = EmbedToUpdate.title;
-            const embedFooter = EmbedToUpdate.footer.text;
+            const EmbedToUpdate = interaction.message.embeds[0];
+            const { thumbnail, title, footer } = EmbedToUpdate;
 
-            RefreshEmbed(interaction, 0, `${emojis["music-back"]} Going back...`, null);
-            
-            await new Promise(resolve => setTimeout(resolve, 1100)).catch(O_o => { console.log(O_o) });
+            await RefreshEmbed(interaction, 0, `${emojis["music-back"]} Going back...`, null);
+            await new Promise(resolve => setTimeout(resolve, 2000));
 
             queue.setRepeatMode(4);
-            queue.history.back().catch(async (e) => {
-
+            
+            await queue.history.back().catch(async (e) => {
                 const embed = new EmbedBuilder()
-                    .setThumbnail(embedThumbnail)
-                    .setTitle(embedTitle)
-                    .setDescription(`${emojis.error} ${e}`)
-                    .setFooter({ text: embedFooter })
+                    .setThumbnail(thumbnail.url)
+                    .setTitle(title)
+                    .setDescription(`${emojis.error} \`${e.message}\``)
+                    .setFooter({ text: footer.text })
                     .setColor(Colors.Red);
 
                 await interaction.message.edit({ embeds: [embed] });
-
-                await new Promise(resolve => setTimeout(resolve, 2000)).catch(O_o => { console.log(O_o) });
-
-                RefreshEmbed(interaction, 0, `${emojis.loading} Refreshing...`, null);
+                
+                await new Promise(resolve => setTimeout(resolve, 2000));
+                
+                await RefreshEmbed(interaction, 0, `${emojis.loading} Refreshing...`, null);
             });
-
         } catch (error) {
-            console.error(error)
+            console.error(error);
         }
-
     }
 }

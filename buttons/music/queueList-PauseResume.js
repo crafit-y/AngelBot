@@ -5,29 +5,24 @@ const { RefreshEmbed } = require("../../functions/music/RefreshTheEmbed");
 
 module.exports = {
     name: 'queuelistembed-pauseresume',
+    permissions: [],
     async run(client, interaction) {
-
         try {
-
             const queue = useQueue(interaction.guild.id);
-
             QueueErrorCheck(interaction, !queue);
 
-            async function getQueueIfIsInPlaying() {
-                if (queue && !queue.node.isPlaying()) {
-                    queue.node.resume();
-                    return `${emojis.loading} Music has been resumed`;
-                } else {
-                    queue.node.pause();
-                    return `${emojis.loading} Music has been paused`;
-                }
+            let message;
+            if (queue.node.isPlaying()) {
+                queue.node.pause();
+                message = `${emojis.loading} Music has been paused`;
+            } else {
+                queue.node.resume();
+                message = `${emojis.loading} Music has been resumed`;
             }
 
-            RefreshEmbed(interaction, 0, (await getQueueIfIsInPlaying()).toString(), null);
-
+            RefreshEmbed(interaction, 0, message, null);
         } catch (error) {
-            console.error(error)
+            console.error(error);
         }
-
     }
 }

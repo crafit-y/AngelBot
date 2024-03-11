@@ -1,9 +1,11 @@
 const { EmbedBuilder, ApplicationCommandOptionType, Colors, StringSelectMenuBuilder, StringSelectMenuOptionBuilder } = require("discord.js");
-const { joinVoiceChannel, createAudioPlayer, AudioPlayerStatus, StreamType } = require('@discordjs/voice');
+const { joinVoiceChannel, getVoiceConnection } = require('@discordjs/voice');
 const emojis = require("../../utils/emojis.json");
 const { useQueue } = require("discord-player");
 const { InitializeQueueListEmbed, QueueErrorCheck } = require("../../functions/music/queueListEmbed");
-const { QueueAction } = require('../../functions/music/music-actions');
+const { createEmbed } = require("../../functions/All/Embeds");
+const { loopSelection } = require("../../functions/music/loop-selection");
+const { DTBM } = require("../../functions/All/DTBM");
 
 module.exports = {
     name: 'music',
@@ -36,30 +38,71 @@ module.exports = {
                     type: ApplicationCommandOptionType.String,
                     required: true,
                     choices: [
-                        { name: 'stop', value: 'stop' },
                         { name: 'pause/resume', value: 'pause-resume' },
-                        { name: 'loop', value: 'loop' },
                         { name: 'skip', value: 'skip' },
                         { name: 'back', value: 'back' },
-                        { name: 'quick-action-for-a-sound', value: 'quick-action-for-a-sound' },
+                        { name: 'loop', value: 'loop' },
+                        { name: 'stop', value: 'stop' },
                         { name: 'queue-list', value: 'queue-list' }
                     ]
                 },
             ]
         },
+        {
+            name: 'join',
+            description: 'Join your current voice channel',
+            type: ApplicationCommandOptionType.Subcommand,
+        },
+        {
+            name: 'disconnect',
+            description: 'Disconnect my current voice channel',
+            type: ApplicationCommandOptionType.Subcommand,
+        },
     ],
-    async run(client, interaction, lang) {
+    async run(client, interaction) {
         const action = interaction.options.getSubcommand();
         const queue = useQueue(interaction.guild.id);
         const channel = interaction.member.voice.channel;
+        const choise = interaction.options.getString('selected-option');
 
         switch (action.toLowerCase()) {
             case "play":
+                await interaction.deferReply();
                 await handlePlayCommand(client, interaction, channel);
                 break;
             case "options":
-                await handleOptionsCommand(interaction, queue);
+                await interaction.deferReply({ ephemeral: choise !== "queue-list" ? true : false });
+                await handleOptionsCommand(client, interaction, queue);
                 break;
+            case "join":
+                await interaction.deferReply({ ephemeral: true });
+
+                if (!channel) return await interaction.editReply('You are not connected to a voice channel!');
+                if (getVoiceConnection(interaction.guild.id)) return await interaction.editReply('I\'m already connected to a voice channel!');
+
+                const connection = joinVoiceChannel({
+                    channelId: channel.id,
+                    guildId: channel.guild.id,
+                    adapterCreator: channel.guild.voiceAdapterCreator,
+                    selfDeaf: true,
+                });
+
+                if (!connection) return await interaction.editReply("Can't join this channel !");
+
+                await interaction.editReply(`${channel} joined !`);
+                break;
+            case "disconnect":
+                await interaction.deferReply({ ephemeral: true });
+                const disconnection = getVoiceConnection(interaction.guild.id);
+
+                if (!channel) return await interaction.editReply('You are not connected to a voice channel!');
+                if (!disconnection) return await interaction.editReply('I\'m not connected to a voice channel!');
+
+                disconnection.disconnect("Force disconnect");
+
+                await interaction.editReply(`Disconnected !`);
+                break;
+
         }
     }
 };
@@ -69,13 +112,12 @@ async function handlePlayCommand(client, interaction, channel) {
     const link = interaction.options.getString('link');
     const player = client.player;
 
-    if (!channel) return interaction.reply('You are not connected to a voice channel!');
+    if (!channel) return interaction.editReply('You are not connected to a voice channel!');
 
     const embed = new EmbedBuilder()
-        .setDescription(`${emojis.loading} Shearing "${link}" on YouTube...`)
+        .setDescription(`${emojis.loading} Shearing \`${link}\` on YouTube...`)
         .setColor(Colors.Orange);
-
-    await interaction.reply({ embeds: [embed] });
+    await interaction.editReply({ embeds: [embed] });
 
     const searchResult = await player.search(link, { requestedBy: interaction.user });
 
@@ -88,10 +130,11 @@ async function handlePlayCommand(client, interaction, channel) {
                 channelId: channel.id,
                 guildId: channel.guild.id,
                 adapterCreator: channel.guild.voiceAdapterCreator,
+                selfDeaf: true,
             });
 
             if (!connection) {
-                return interaction.reply("Impossible de rejoindre le canal vocal.");
+                return interaction.editReply("Impossible de rejoindre le canal vocal.");
             }
 
             await player.play(channel, searchResult, {
@@ -119,19 +162,17 @@ async function handlePlayCommand(client, interaction, channel) {
                 const playlist = searchResult.playlist
 
                 embed.setTitle(`${emojis.success} Playlist added to queue !`)
-                    .setDescription(`**${searchResult.tracks.length} songs from [${playlist.title}](${playlist.url})** have been added to the Queue`)
+                    .setDescription(`**${searchResult.tracks.length} songs from [${playlist.title}](${playlist.url})** have been added to the Queue !`)
                     .setThumbnail(playlist.thumbnail.url)
             } else {
                 const track = searchResult.tracks[0];
 
                 embed.setTitle(`${emojis.success} Sound added to queue !`)
-                    .setDescription(`[${track.title}](${track.url}) are been added to the Queue
-                                **Duration:** *${track.duration}*
-                                **Artist:** *${track.author}*`)
+                    .setDescription(`[${track.title}](${track.url}) are been added to the Queue !\n**Duration:** *${track.duration}*\n**Artist:** *${track.author}*`)
                     .setThumbnail(track.thumbnail)
             }
 
-            await interaction.editReply({ embeds: [embed] });
+            await interaction.editReply({ embeds: [embed], components: [DTBM.createButton()] });
         } catch (e) {
             console.error(e);
             return interaction.followUp(`Something went wrong: ${e}`);
@@ -139,53 +180,65 @@ async function handlePlayCommand(client, interaction, channel) {
     }
 }
 
-async function handleOptionsCommand(interaction, queue) {
+async function handleOptionsCommand(client, interaction, queue) {
     // Code de gestion de la commande "options"
     const choise = interaction.options.getString('selected-option');
-    const queueAction = new QueueAction(interaction);
 
     switch (choise) {
         case 'stop':
+            await interaction.editReply({ embeds: [await createEmbed.embed(`${emojis.loading} Stopping...`)] });
             QueueErrorCheck(!queue || !queue.node.isPlaying());
             queue.delete();
+            await interaction.editReply({ embeds: [await createEmbed.embed(`${emojis["music-stop"]} Stopped !`)] });
             break;
+
         case 'pause-resume':
+            await interaction.editReply({ embeds: [await createEmbed.embed(`${emojis.loading} Updating...`)] });
+
             QueueErrorCheck(!queue);
+
             if (queue && !queue.node.isPlaying()) {
                 queue.node.resume();
+                await interaction.editReply({ embeds: [await createEmbed.embed(`${emojis["music-resume"]} Resumed !`)] });
             } else {
                 queue.node.pause();
+                await interaction.editReply({ embeds: [await createEmbed.embed(`${emojis["music-pause"]} Paused !`)] });
             }
             break;
+
         case 'loop':
+
             QueueErrorCheck(!queue || !queue.node.isPlaying());
-            queueAction.loop(1);
+
+            await loopSelection(client, interaction);
+
             break;
+
         case 'skip':
+            await interaction.editReply({ embeds: [await createEmbed.embed(`${emojis.loading} Skipping...`)] });
+
             QueueErrorCheck(!queue || !queue.node.isPlaying());
             queue.node.skip();
-            break;
-        case 'back':
-            QueueErrorCheck(!queue || !queue.node.isPlaying());
-            queue.history.back().catch(async (e) => {
-                const embed = new EmbedBuilder()
-                    .setThumbnail(embedThumbnail)
-                    .setTitle(embedTitle)
-                    .setDescription(`${emojis.error} ${e}`)
-                    .setFooter({ text: embedFooter })
-                    .setColor(Colors.Red);
 
-                await interaction.message.edit({ embeds: [embed] });
+            await interaction.editReply({ embeds: [await createEmbed.embed(`${emojis["music-skip"]} Skipped !`)] });
+            break;
+
+        case 'back':
+            await interaction.editReply({ embeds: [await createEmbed.embed(`${emojis.loading} Going back...`)] });
+
+            QueueErrorCheck(!queue || !queue.node.isPlaying());
+
+            queue.history.back().catch(async (e) => {
+                return await interaction.editReply({ embeds: [await createEmbed.embed(`${emojis.error} ${e.message}`)] });
             });
+
+            await interaction.editReply({
+                embeds: [await createEmbed.embed(`${emojis["music-back"]} Back again!`)]
+            });
+
             break;
-        case 'quick-action-for-a-sound':
-            // Code pour la commande "quick-action-for-a-sound"
-            break;
-        case 'skipto':
-            // Code pour la commande "skipto"
-            break;
+
         case 'queue-list':
-            // Code pour la commande "queue-list"
             QueueErrorCheck(!queue || !queue.node.isPlaying());
             InitializeQueueListEmbed(interaction, 0)
             break;

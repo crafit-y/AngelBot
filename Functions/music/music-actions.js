@@ -1,28 +1,22 @@
-const { ActionRowBuilder, ButtonBuilder, ButtonStyle, EmbedBuilder, Colors, CommandInteraction, StringSelectMenuBuilder, StringSelectMenuOptionBuilder } = require('discord.js');
-const { useQueue, useHistory } = require("discord-player");
+const { useQueue } = require("discord-player");
+const { Colors } = require('discord.js');
+const { QueueErrorCheck } = require("./queueListEmbed");
+const { createEmbed } = require('../All/Embeds');
 const emojis = require("../../utils/emojis.json");
-const { QueueListEmbed, QueueErrorCheck } = require("./queueListEmbed");
 
-function QueueAction(interaction) {
+class QueueAction {
+    constructor(interaction) {
+        this.queue = useQueue(interaction.guild.id);
+        this.message = interaction.message;
+    }
 
-    const queue = useQueue(interaction.guild.id);
-    const message = interaction.message
+    async loop(loopMode) {
+        QueueErrorCheck(!this.queue || !this.queue.node.isPlaying());
 
-    QueueErrorCheck(!queue || !queue.node.isPlaying());
+        this.queue.setRepeatMode(loopMode);
 
-
-
-    this.loop = function (loopMode) {
-
-        queue.setRepeatMode(loopMode);
-
-        const embedLoop = new EmbedBuilder()
-            .setDescription(`${emojis["music-loopTrack"]} **The sound** \`${queue.currentTrack.title}\` **is in loop mode**`)
-            .setColor(Colors.DarkBlue);
-
-        interaction.reply({ embeds: [embedLoop], ephemeral: true });
-    };
+        interaction.reply({ embeds: [await createEmbed.embed(`${emojis["music-loopTrack"]} **The sound** \`${this.queue.currentTrack.title}\` **is in loop mode**`, Colors.DarkBlue)], ephemeral: true });
+    }
 }
 
-
-module.exports = { QueueAction: QueueAction };
+module.exports = { QueueAction };

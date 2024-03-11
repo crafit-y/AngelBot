@@ -1,11 +1,15 @@
-const emojis = require("../../utils/emojis.json");
 const { RefreshEmbed } = require("../../functions/music/RefreshTheEmbed");
 
 module.exports = {
     name: 'queuelistembed-nextpage',
+    permissions: [],
     async run(client, interaction) {
+        try {
 
-        RefreshEmbed(interaction, +1, `${emojis.loading} Refreshing...`, null);
+            RefreshEmbed(interaction, +1, "Refreshing...", null);
 
+        } catch (error) {
+            console.error(error);
+        }
     }
 }

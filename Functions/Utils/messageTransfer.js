@@ -1,6 +1,6 @@
 const { ChannelSelectMenuBuilder, ActionRowBuilder, InteractionCollector } = require('discord.js');
 const { createEmbed } = require('../All/Embeds');
-const { WebHookBuilder } = require('../All/WebHook');
+const { WebHookBuilder } = require('../All/WebHooks');
 const emojis = require('../../utils/emojis.json');
 const IDS = require('../../utils/ids.json');
 

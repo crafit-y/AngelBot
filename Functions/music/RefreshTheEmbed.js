@@ -1,56 +1,38 @@
 const { EmbedBuilder, Colors } = require('discord.js');
 const { useQueue } = require("discord-player");
 const emojis = require("../../utils/emojis.json");
+const { createEmbed } = require('../All/Embeds');
 const { InitializeQueueListEmbed, QueueErrorCheck } = require("./queueListEmbed");
 
 async function RefreshEmbed(interaction, ingremantation, newEmbedDescription, newEmbedFooter) {
-
-  await interaction.deferUpdate().catch((e) => {});
-  const queue = useQueue(interaction.guild.id);
-
   try {
-
+    await interaction.deferUpdate().catch(() => { });
+    const queue = useQueue(interaction.guild.id);
     QueueErrorCheck(interaction, !queue);
 
-    const EmbedToUpdate = interaction.message.embeds[0]
-    const embedThumbnail = EmbedToUpdate.thumbnail.url;
-    const embedTitle = EmbedToUpdate.title;
-    const embedFooter = EmbedToUpdate.footer.text;
+    const EmbedToUpdate = interaction.message.embeds[0];
+    const { thumbnail, title, footer } = EmbedToUpdate;
 
     const embed = new EmbedBuilder()
-      .setThumbnail(embedThumbnail)
-      .setTitle(embedTitle)
+      .setThumbnail(thumbnail.url)
+      .setTitle(title)
       .setDescription(newEmbedDescription)
-      .setFooter({ text: newEmbedFooter != null ? newEmbedFooter : embedFooter })
+      .setFooter({ text: newEmbedFooter || footer.text })
       .setColor(Colors.Orange);
 
     await interaction.message.edit({ embeds: [embed] });
-
-    await new Promise(resolve => setTimeout(resolve, 100)).catch(O_o => { console.log(O_o) });
+    await new Promise(resolve => setTimeout(resolve, 1000));
 
     InitializeQueueListEmbed(interaction, ingremantation);
 
   } catch (error) {
+    console.error(error);
+    const queue = useQueue(interaction.guild.id);
+    if (queue) return queue.delete().catch(() => { });
 
-    console.error(error)
-
-    queue.delete().catch(O_o => { console.log(O_o) });
-
-    const embed = new EmbedBuilder()
-      .setDescription(`${emojis.error} Error on refreshing ! (Please try again, music stopped)\n\`\`\`${error}\`\`\``)
-      .setColor(Colors.Red);
-
-    if (interaction.isRepliable()) {
-      //interaction.deferUpdate().catch(() => {});
-      return interaction.message.edit({
-        embeds: [embed]
-      });
-    } else {
-      return interaction.reply({
-        embeds: [embed]
-      });
-    }
+    const replyMethod = interaction.isRepliable() ? interaction.message.edit : interaction.reply;
+    replyMethod.call(interaction, { embeds: [await createEmbed.embed(`${emojis.error} Error on refreshing ! (Please try again, music stopped)\n\`${error}\``, Colors.Red)] }).catch(() => { });
   }
 }
 
-module.exports = { RefreshEmbed: RefreshEmbed };
+module.exports = { RefreshEmbed };

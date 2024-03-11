@@ -9,6 +9,7 @@ const { commandError } = require('../../utils/errors/commandError')
 
 module.exports = {
     name: 'deletethebotmessage',
+    permissions: [],
     async run(client, interaction) {
 
         try {
