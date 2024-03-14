@@ -13,15 +13,15 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "@discordjs/voice": "^0.16.1",
-    "chalk": "^4.1.2",
-    "dayjs": "^1.11.10",
-    "discord-player": "^6.6.7",
-    "discord.js": "^14.14.1",
-    "dotenv": "^16.0.0",
-    "fs": "^0.0.1-security",
-    "glob": "^7.2.0",
-    "mediaplex": "^0.0.9",
-    "ytdl-core": "^4.11.5"
+    "@discordjs/voice": "0.16.1",
+    "chalk": "4.1.2",
+    "dayjs": "1.11.10",
+    "discord-player": "6.6.7",
+    "discord.js": "14.14.1",
+    "dotenv": "16.0.0",
+    "fs": "0.0.1-security",
+    "glob": "7.2.0",
+    "mediaplex": "0.0.9",
+    "ytdl-core": "4.11.5"
   }
 }
