@@ -87,7 +87,7 @@ module.exports = {
                         .setTitle(EmbedToUpdate.title)
                         .setDescription(actionDescription)
                         .setFooter({ text: EmbedToUpdate.footer.text })
-                        .setColor(Colors.DarkBlue);
+                        .setColor(Colors.Purple);
 
                     await interaction.message.edit({ embeds: [embed] });
                     await new Promise(resolve => setTimeout(resolve, 3000));

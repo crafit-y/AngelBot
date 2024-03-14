@@ -21,7 +21,7 @@ async function RefreshEmbed(interaction, ingremantation, newEmbedDescription, ne
       .setColor(Colors.Orange);
 
     await interaction.message.edit({ embeds: [embed] });
-    await new Promise(resolve => setTimeout(resolve, 1000));
+    await new Promise(resolve => setTimeout(resolve, 2000));
 
     InitializeQueueListEmbed(interaction, ingremantation);
 

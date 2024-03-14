@@ -36,6 +36,7 @@ module.exports = {
             });
         } catch (error) {
             console.error(error);
+            RefreshEmbed(interaction, 0, `${emojis.error} ${error.message}`, null);
         }
     }
 }

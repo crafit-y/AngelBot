@@ -33,7 +33,7 @@ module.exports = {
 
           // Modification du nom du canal en fonction du statut du live
           channel.setName(channelName)
-            .then(updatedChannel => console.log(`Nom du canal mis à jour: ${updatedChannel.name}`))
+            //.then(updatedChannel => console.log(`Nom du canal mis à jour: ${updatedChannel.name}`))
             .catch(console.error);
 
         }

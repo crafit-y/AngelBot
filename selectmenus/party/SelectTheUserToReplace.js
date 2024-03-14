@@ -57,30 +57,37 @@ module.exports = {
       const row = new ActionRowBuilder()
         .addComponents(userSelect);
 
-      await interaction.reply({ embeds: [await createEmbed.embed(`### By whom do you want to replace <@${userId}> ?\n*You have 1 minute*`)], components: [row], ephemeral: true });
+      await interaction.reply({ embeds: [await createEmbed.embed(`### By whom do you want to replace <@${userId}> ?\n*You have 30 seconds*`)], components: [row], ephemeral: true });
 
       const filter = i => i.user.id === interaction.user.id;
-      const collector = new InteractionCollector(client, { filter, time: 60000 });
+      const collector = new InteractionCollector(client, { filter, time: 30000 });
 
       collector.on('collect', async i => {
-        const selectedUserId = i.values[0];
-        const selectedUser = interaction.guild.members.cache.get(selectedUserId);
 
-        await i.deferUpdate();
-        collector.stop();
-        userSelect.setDisabled(true);
+        console.log(i.customId)
+        console.log(USER_CUSTOM_ID)
 
-        if (selectedUser) {
-          await teamManager.findAndUpdate(userId, selectedUser.id, team);
+        if (i.customId === USER_CUSTOM_ID) {
 
-          userSelect.setDefaultUsers(selectedUser.id);
+          const selectedUserId = i.values[0];
+          const selectedUser = interaction.guild.members.cache.get(selectedUserId);
 
-          await interaction.editReply({ embeds: [await createEmbed.embed(`You have replaced <@${userId}> by ${selectedUser}`)], components: [row], ephemeral: true });
+          await i.deferUpdate();
+          collector.stop();
+          userSelect.setDisabled(true);
 
-          await updateUsersTeam(client, interaction, team, true, firstInt);
+          if (selectedUser) {
+            await teamManager.findAndUpdate(userId, selectedUser.id, team);
 
-        } else {
-          await interaction.editReply({ embeds: [await createEmbed.embed(`⚠️ Selected user not found. Please try again.`)], components: [row], ephemeral: true });
+            userSelect.setDefaultUsers(selectedUser.id);
+
+            await interaction.editReply({ embeds: [await createEmbed.embed(`You have replaced <@${userId}> by ${selectedUser}`)], components: [row], ephemeral: true });
+
+            await updateUsersTeam(client, interaction, team, true, firstInt);
+
+          } else {
+            await interaction.editReply({ embeds: [await createEmbed.embed(`⚠️ Selected user not found. Please try again.`)], components: [row], ephemeral: true });
+          }
         }
       });
 

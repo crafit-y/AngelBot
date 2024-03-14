@@ -23,6 +23,7 @@ module.exports = {
             RefreshEmbed(interaction, 0, message, null);
         } catch (error) {
             console.error(error);
+            RefreshEmbed(interaction, 0, `${emojis.error} ${error.message}`, null);
         }
     }
 }

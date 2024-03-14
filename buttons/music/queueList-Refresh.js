@@ -6,7 +6,11 @@ module.exports = {
     permissions: [],
     async run(client, interaction) {
 
-        RefreshEmbed(interaction, 0, `${emojis.loading} Refreshing...`, null);
+        try {
+            RefreshEmbed(interaction, 0, `${emojis.loading} Refreshing...`, null);
+        } catch (error) {
+            RefreshEmbed(interaction, 0, `${emojis.error} ${error.message}`, null);
+        }
 
     }
 }

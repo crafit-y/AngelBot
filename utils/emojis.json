@@ -16,6 +16,8 @@
   "away": "🟠",
   
   "music": "<a:among_usRaimbow:1207107123591258183>",
+  "music-note": "🎵",
+  "music-notes": "🎶",
   "music-loopTrack": "🔂",
   "music-loopQueue": "🔁",
   "music-loopInfinitQueue": "♾️",
@@ -24,5 +26,6 @@
   "music-pause": "⏸️",
   "music-resume": "▶️",
   "music-skip": "⏩",
-  "music-back": "⏪"
+  "music-back": "⏪",
+  "music-shuffle": "🔀"
 }

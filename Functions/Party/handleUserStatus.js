@@ -29,11 +29,11 @@ async function handleUserStatus(client, member, action) {
       if (channel && action === 'reconnect') {
         await member.voice.setChannel(channel);
         logChannel.send({
-          embeds: [await createEmbed.log(client, `### ${emojis.info} | LOGS - Systeme\n> User moved due to reconnection > ${member}\n> Channel > ${channel}`)]
+          embeds: [await createEmbed.log(client, `### ${emojis.info} | LOGS - Systeme\n> User moved due to reconnection ➔ ${member}\n> Channel ➔ ${channel}`)]
         });
       } else if (channel && action === 'disconnect') {
         logChannel.send({
-          embeds: [await createEmbed.log(client, `### ${emojis.info} | LOGS - Systeme\n> User left on party > ${member}\n> Team > Team${memberTeam}`)]
+          embeds: [await createEmbed.log(client, `### ${emojis.info} | LOGS - Systeme\n> User left on party ➔ ${member}\n> Team ➔ **Team${memberTeam}**`)]
         });
       }
     }

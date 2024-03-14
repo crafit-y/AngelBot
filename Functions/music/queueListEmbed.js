@@ -33,20 +33,20 @@ async function InitializeQueueListEmbed(interaction, increment) {
         const pageEnd = pageStart + tracksPerPage;
 
         const tracks = queue.tracks.data.slice(pageStart, pageEnd).map((m, i) => {
-            const Title = m.title.replace(m.author + " - ", "").replace(m.author, "").replace(" - ", " ").slice(0, 30);
+            const Title = m.title.replace(m.author + " - ", "").replace(m.author, "").replace(" - ", "").replace("/", "").slice(0, 30);
 
             const Author = m.author.slice(0, 25);
 
-            return `\`${i + 1}.\` **${Title} - ${Author}**
+            return `**${emojis["music-note"]} | \`#${i + 1}\`  ${Title}**\n*➔ by ${Author}*
                     > Added by ${m.requestedBy} - *[link](${m.url})* | ${m.duration}`;
         });
 
         const embed = new EmbedBuilder()
             .setThumbnail(currentTrack.thumbnail || "")
             .setTitle(`${emojis.music} | ${currentTrack.title} is playing on <#${queue.channel.id}>`)
-            .setDescription(`${queue.node.createProgressBar()}\n\n${queue.tracks.size <= 0 ? "No more track" : tracks.join('\n')}\n${queue.tracks.size > pageEnd ? `...${queue.tracks.size - pageEnd} more track(s)` : ''}`)
+            .setDescription(`${queue.node.createProgressBar()}\n\n${queue.tracks.size <= 0 ? "No more track" : tracks.join('\n')}\n${queue.tracks.size > pageEnd ? `...${queue.tracks.size - pageEnd} more track${queue.tracks.size - pageEnd > 1 ? "s" : ""}` : ''}`)
             .setFooter({ text: `Page ${currentPage} of ${totalPages === -1 ? "0" : totalPages}` })
-            .setColor(Colors.DarkBlue);
+            .setColor(Colors.Purple);
 
         try {
             await (fetchedMessage !== null ? interaction.message.edit({ embeds: [embed], components: await BuildRowComponents(queue, currentPage, totalPages) }) : interaction.editReply({ embeds: [embed], components: await BuildRowComponents(queue, currentPage, totalPages) }));
@@ -81,7 +81,7 @@ async function BuildRowComponents(queue, currentPage, totalPages) {
     const musicRow2 = await createButton.create([
         ['queuelistembed-loop', "Loop", emojis['music-loopTrack'], ButtonStyle.Secondary, false, null],
         ['queuelistembed-delete', "Stop", emojis['music-stop'], ButtonStyle.Danger, false, null],
-        ['queuelistembed-notdefined1', "none", null, ButtonStyle.Secondary, true, null]
+        ['queuelistembed-shuffle', "Shuffle", emojis["music-shuffle"], ButtonStyle.Secondary, false, null]
     ]);
 
     const quickAction = new ActionRowBuilder().addComponents(

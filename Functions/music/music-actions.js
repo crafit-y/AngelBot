@@ -15,7 +15,7 @@ class QueueAction {
 
         this.queue.setRepeatMode(loopMode);
 
-        interaction.reply({ embeds: [await createEmbed.embed(`${emojis["music-loopTrack"]} **The sound** \`${this.queue.currentTrack.title}\` **is in loop mode**`, Colors.DarkBlue)], ephemeral: true });
+        interaction.reply({ embeds: [await createEmbed.embed(`${emojis["music-loopTrack"]} **The sound** \`${this.queue.currentTrack.title}\` **is in loop mode**`, Colors.Purple)], ephemeral: true });
     }
 }
 

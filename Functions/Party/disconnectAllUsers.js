@@ -14,9 +14,9 @@ async function disconnectAllUsers(client, interaction, CHANNELS, validUserIds) {
 
       if (member.voice.channel !== null && (member.voice.channelId === CHANNELS.END || member.voice.channelId === CHANNELS.TEAM1 || member.voice.channelId === CHANNELS.TEAM2)) {
         await member.voice.disconnect("The party is ended and deleted !");
-        array.push(`${emojis.success} - User disconnected > ${member}`);
+        array.push(`${emojis.success} - User disconnected ➔ ${member}`);
       } else {
-        array.push(`${emojis.error} - User was already disconnected > ${member}`);
+        array.push(`${emojis.error} - User was already disconnected ➔ ${member}`);
       }
 
       await new Promise(resolve => setTimeout(resolve, 500)).catch(O_o => { console.log(O_o) });

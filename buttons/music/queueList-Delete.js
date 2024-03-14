@@ -15,6 +15,7 @@ module.exports = {
             if (queue) return queue.delete();
         } catch (error) {
             console.error(error);
+            RefreshEmbed(interaction, 0, `${emojis.error} ${error.message}`, null);
         }
     }
 }
