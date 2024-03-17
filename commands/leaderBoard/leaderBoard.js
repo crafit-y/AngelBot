@@ -1,10 +1,10 @@
 const { ApplicationCommandOptionType, Colors } = require('discord.js');
-const { getTheTeamOfTheUser } = require('../../functions/Party/getTheTeamOfTheUser');
-const { getAllTheTeam } = require('../../functions/Party/getAllTheTeam');
-const { createEmbed } = require('../../functions/All/Embeds.js');
-const { liveManager } = require('../../functions/Fs/LiveManager.js');
-const { partyManager } = require('../../functions/Fs/PartyManager.js');
-const { leaderBoard } = require('../../functions/Fs/leaderBoard.js');
+const { getTheTeamOfTheUser } = require('../../functions/party/getTheTeamOfTheUser');
+const { getAllTheTeam } = require('../../functions/party/getAllTheTeam');
+const { createEmbed } = require('../../functions/all/Embeds.js');
+const { liveManager } = require('../../functions/fs/LiveManager.js');
+const { partyManager } = require('../../functions/fs/PartyManager.js');
+const { leaderBoard } = require('../../functions/fs/leaderBoard.js');
 
 const emojis = require('../../utils/emojis.json');
 const IDS = require('../../utils/ids.json');

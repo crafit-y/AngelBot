@@ -3,9 +3,9 @@ const { joinVoiceChannel, getVoiceConnection } = require('@discordjs/voice');
 const emojis = require("../../utils/emojis.json");
 const { useQueue } = require("discord-player");
 const { InitializeQueueListEmbed, QueueErrorCheck } = require("../../functions/music/queueListEmbed");
-const { createEmbed } = require("../../functions/All/Embeds");
+const { createEmbed } = require("../../functions/all/Embeds");
 const { loopSelection } = require("../../functions/music/loop-selection");
-const { DTBM } = require("../../functions/All/DTBM");
+const { DTBM } = require("../../functions/all/DTBM");
 
 module.exports = {
     name: 'music',

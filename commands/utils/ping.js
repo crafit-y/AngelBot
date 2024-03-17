@@ -1,4 +1,4 @@
-const { createEmbed } = require("../../functions/All/Embeds");
+const { createEmbed } = require("../../functions/all/Embeds");
 
 module.exports = {
   name: 'ping',

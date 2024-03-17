@@ -1,15 +1,15 @@
 const { ApplicationCommandOptionType, Colors, StringSelectMenuBuilder, StringSelectMenuOptionBuilder, ActionRowBuilder, PermissionFlagsBits } = require('discord.js');
 const fs = require('fs').promises;
-const { moveUsersToTheVoiceChannel } = require('../../functions/Party/MoveUsers.js');
-const { disconnectAllUsers } = require('../../functions/Party/disconnectAllUsers');
-const { getTheTeamOfTheUser } = require('../../functions/Party/getTheTeamOfTheUser.js');
-const { getAllTheTeam } = require('../../functions/Party/getAllTheTeam');
-const { updateUsersTeam } = require('../../functions/Party/updateUsersTeam.js');
-const { createEmbed } = require('../../functions/All/Embeds.js');
-const { teamManager } = require('../../functions/Fs/TeamManager.js');
-const { liveManager } = require('../../functions/Fs/LiveManager.js');
-const { partyManager } = require('../../functions/Fs/PartyManager.js');
-const { leaderBoard } = require('../../functions/Fs/leaderBoard.js');
+const { moveUsersToTheVoiceChannel } = require('../../functions/party/MoveUsers.js');
+const { disconnectAllUsers } = require('../../functions/party/disconnectAllUsers');
+const { getTheTeamOfTheUser } = require('../../functions/party/getTheTeamOfTheUser.js');
+const { getAllTheTeam } = require('../../functions/party/getAllTheTeam');
+const { updateUsersTeam } = require('../../functions/party/updateUsersTeam.js');
+const { createEmbed } = require('../../functions/all/Embeds.js');
+const { teamManager } = require('../../functions/fs/TeamManager.js');
+const { liveManager } = require('../../functions/fs/LiveManager.js');
+const { partyManager } = require('../../functions/fs/PartyManager.js');
+const { leaderBoard } = require('../../functions/fs/leaderBoard.js');
 
 const emojis = require('../../utils/emojis.json');
 const IDS = require('../../utils/ids.json');

@@ -19,8 +19,15 @@ module.exports = async client => [
     //   }
     // });
 
+    try {
+      
+      client.commands.set(command.name, command);
+    
+    } catch (error) {
+      Logger.warn(`Error -> ${error.message}`);
+    }
 
-    client.commands.set(command.name, command);
+
     
     Logger.command(`Load -> ${command.name}`);
   })

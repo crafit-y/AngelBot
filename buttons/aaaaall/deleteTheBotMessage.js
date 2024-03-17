@@ -1,5 +1,4 @@
 const { ActionRowBuilder, ButtonBuilder, ButtonStyle, CommandInteraction } = require('discord.js');
-const { commandError } = require('../../utils/errors/commandError')
 
 /**
      * 

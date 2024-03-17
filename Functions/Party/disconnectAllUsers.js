@@ -1,5 +1,5 @@
 const { EmbedBuilder, Colors } = require('discord.js');
-const { createEmbed } = require('../All/Embeds');
+const { createEmbed } = require('../all/Embeds');
 const emojis = require('../../utils/emojis.json');
 const IDS = require('../../utils/ids.json');
 

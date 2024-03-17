@@ -1,9 +1,9 @@
-const { ApplicationCommandOptionType, Colors } = require('discord.js');
-const { disconnectAllUsers } = require('../../functions/Party/disconnectAllUsers');
-const { getAllTheTeam } = require('../../functions/Party/getAllTheTeam');
-const { createEmbed } = require('../../functions/All/Embeds.js');
-const { liveManager } = require('../../functions/Fs/LiveManager.js');
-const { partyManager } = require('../../functions/Fs/PartyManager.js');
+const { ApplicationCommandOptionType, Colors, PermissionFlagsBits } = require('discord.js');
+const { disconnectAllUsers } = require('../../functions/party/disconnectAllUsers');
+const { getAllTheTeam } = require('../../functions/party/getAllTheTeam');
+const { createEmbed } = require('../../functions/all/Embeds.js');
+const { liveManager } = require('../../functions/fs/LiveManager.js');
+const { partyManager } = require('../../functions/fs/PartyManager.js');
 
 const emojis = require('../../utils/emojis.json');
 const IDS = require('../../utils/ids.json');
@@ -11,7 +11,7 @@ const IDS = require('../../utils/ids.json');
 module.exports = {
   name: 'force_disconnection',
   description: 'Force disconnect all memebrs of the party voice channel',
-  permissions: ['ADMINISTRATOR'],
+  permissions: [PermissionFlagsBits.Administrator],
   options: [
     {
       name: 'by_pass_verifications',

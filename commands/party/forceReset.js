@@ -1,9 +1,9 @@
-const { ApplicationCommandOptionType, Colors } = require('discord.js');
-const { disconnectAllUsers } = require('../../functions/Party/disconnectAllUsers');
-const { createEmbed } = require('../../functions/All/Embeds.js');
-const { teamManager } = require('../../functions/Fs/TeamManager.js');
-const { liveManager } = require('../../functions/Fs/LiveManager.js');
-const { partyManager } = require('../../functions/Fs/PartyManager.js');
+const { PermissionFlagsBits } = require('discord.js');
+const { disconnectAllUsers } = require('../../functions/party/disconnectAllUsers');
+const { createEmbed } = require('../../functions/all/Embeds.js');
+const { teamManager } = require('../../functions/fs/TeamManager.js');
+const { liveManager } = require('../../functions/fs/LiveManager.js');
+const { partyManager } = require('../../functions/fs/PartyManager.js');
 
 const emojis = require('../../utils/emojis.json');
 const IDS = require('../../utils/ids.json');
@@ -11,7 +11,7 @@ const IDS = require('../../utils/ids.json');
 module.exports = {
   name: 'force_reset',
   description: 'Force reset all informations of the party (can\'t be undone)',
-  permissions: ['ADMINISTRATOR'],
+  permissions: [PermissionFlagsBits.Administrator],
   options: [],
   OwnerOnly: "true",
   async run(client, interaction) {

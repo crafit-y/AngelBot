@@ -1,7 +1,7 @@
 const { EmbedBuilder, Colors } = require('discord.js');
 const { useQueue } = require("discord-player");
 const emojis = require("../../utils/emojis.json");
-const { createEmbed } = require('../All/Embeds');
+const { createEmbed } = require('../all/Embeds');
 const { InitializeQueueListEmbed, QueueErrorCheck } = require("./queueListEmbed");
 
 async function RefreshEmbed(interaction, ingremantation, newEmbedDescription, newEmbedFooter) {
@@ -14,7 +14,7 @@ async function RefreshEmbed(interaction, ingremantation, newEmbedDescription, ne
     const { thumbnail, title, footer } = EmbedToUpdate;
 
     const embed = new EmbedBuilder()
-      .setThumbnail(thumbnail.url)
+      .setThumbnail(thumbnail.url || null)
       .setTitle(title)
       .setDescription(newEmbedDescription)
       .setFooter({ text: newEmbedFooter || footer.text })

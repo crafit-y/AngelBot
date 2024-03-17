@@ -1,8 +1,8 @@
 const { Colors } = require('discord.js');
-const { createEmbed } = require('../All/Embeds.js');
+const { createEmbed } = require('../all/Embeds.js');
 const emojis = require('../../utils/emojis.json');
 const IDS = require('../../utils/ids.json');
-const { getTheTeamOfTheUser } = require('../../functions/Party/getTheTeamOfTheUser.js');
+const { getTheTeamOfTheUser } = require('../../functions/party/getTheTeamOfTheUser.js');
 const { partyManager } = require('../Fs/PartyManager.js');
 const { liveManager } = require('../Fs/LiveManager.js');
 

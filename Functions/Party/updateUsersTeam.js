@@ -1,6 +1,6 @@
 const { StringSelectMenuOptionBuilder, StringSelectMenuBuilder, ActionRowBuilder, ButtonBuilder, ButtonStyle } = require('discord.js');
-const { getAllTheTeam } = require('../../functions/Party/getAllTheTeam');
-const { createEmbed } = require('../All/Embeds');
+const { getAllTheTeam } = require('./getAllTheTeam');
+const { createEmbed } = require('../all/Embeds');
 const emojis = require('../../utils/emojis.json');
 
 async function updateUsersTeam(client, interaction, team, replyed = false, updated = 0) {

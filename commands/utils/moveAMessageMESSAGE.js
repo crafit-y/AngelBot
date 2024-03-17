@@ -1,5 +1,5 @@
 const { PermissionFlagsBits, ApplicationCommandType } = require('discord.js');
-const { MessageTransfer } = require('../../functions/Utils/messageTransfer');
+const { MessageTransfer } = require('../../functions/utils/messageTransfer');
 
 
 module.exports = {

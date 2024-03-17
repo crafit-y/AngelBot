@@ -1,8 +1,8 @@
 const { EmbedBuilder, Colors, StringSelectMenuBuilder, ActionRowBuilder, ButtonStyle, StringSelectMenuOptionBuilder } = require("discord.js");
 const { useQueue } = require("discord-player");
-const { DTBM } = require("../All/DTBM");
-const { createButton } = require("../All/Buttons");
-const { createEmbed } = require('../All/Embeds');
+const { DTBM } = require("../all/DTBM");
+const { createButton } = require("../all/Buttons");
+const { createEmbed } = require('../all/Embeds');
 const emojis = require("../../utils/emojis.json");
 
 async function InitializeQueueListEmbed(interaction, increment) {

@@ -1,7 +1,7 @@
 const { EmbedBuilder, Colors, ActionRowBuilder, StringSelectMenuBuilder, StringSelectMenuOptionBuilder, InteractionCollector } = require('discord.js');
 const emojis = require("../../utils/emojis.json");
 const { useQueue } = require("discord-player");
-const { createEmbed } = require("../All/Embeds");
+const { createEmbed } = require("../all/Embeds");
 const { QueueErrorCheck } = require("../../functions/music/queueListEmbed");
 
 async function loopSelection(client, interaction) {

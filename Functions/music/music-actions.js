@@ -1,7 +1,7 @@
 const { useQueue } = require("discord-player");
 const { Colors } = require('discord.js');
 const { QueueErrorCheck } = require("./queueListEmbed");
-const { createEmbed } = require('../All/Embeds');
+const { createEmbed } = require('../all/Embeds');
 const emojis = require("../../utils/emojis.json");
 
 class QueueAction {

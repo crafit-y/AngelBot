@@ -1,63 +1,71 @@
+const { commandError } = require("../../functions/errors/commandError");
 
 
 module.exports = {
   name: 'interactionCreate',
   once: false,
   async execute(client, interaction) {
-    if (interaction.isCommand()) {
 
-      const command = client.commands.get(interaction.commandName);
-      if (!command) return interaction.reply('Cette commande n\'existe pas !')
+    try {
 
-      if (command.OwnerOnly && interaction.member.id != "391233346996535306") return interaction.reply({ content: `Vous n'avez pas la permission d'executer cette commande !`, ephemeral: true })
+      if (interaction.isCommand()) {
 
-      if (!interaction.member.permissions.has([command.permissions])) return interaction.reply({ content: `Vous n'avez pas la permission d'executer cette commande !`, ephemeral: true })
+        const command = client.commands.get(interaction.commandName);
+        if (!command) return interaction.reply('Cette commande n\'existe pas !')
 
-      command.run(client, interaction);
+        if (command.OwnerOnly && interaction.member.id != "391233346996535306") return interaction.reply({ content: `Vous n'avez pas la permission d'executer cette commande !`, ephemeral: true })
 
-      // BUTTONS -----------------------------------
-    } else if (interaction.isButton() && client.buttons.get(interaction.customId)) {
+        if (!interaction.member.permissions.has([command.permissions])) return interaction.reply({ content: `Vous n'avez pas la permission d'executer cette commande !`, ephemeral: true })
 
-      const button = client.buttons.get(interaction.customId);
+        command.run(client, interaction);
 
-      if (!button) return interaction.reply('This button is not work...');
+        // BUTTONS -----------------------------------
+      } else if (interaction.isButton() && client.buttons.get(interaction.customId)) {
 
-      if (!interaction.member.permissions.has([button.permissions])) return interaction.reply({ content: `Vous n'avez pas la permission d'executer ce boutton !`, ephemeral: true })
+        const button = client.buttons.get(interaction.customId);
 
-      button.run(client, interaction);
+        if (!button) return interaction.reply('This button is not work...');
 
-      // MODALS -----------------------------------
-    } else if (interaction.isModalSubmit() && client.modals.get(interaction.customId)) {
+        if (!interaction.member.permissions.has([button.permissions])) return interaction.reply({ content: `Vous n'avez pas la permission d'executer ce boutton !`, ephemeral: true })
 
-      const modal = client.modals.get(interaction.customId);
+        button.run(client, interaction);
 
-      if (!modal) return interaction.reply("This modal is not work...");
+        // MODALS -----------------------------------
+      } else if (interaction.isModalSubmit() && client.modals.get(interaction.customId)) {
 
-      modal.run(client, interaction);
+        const modal = client.modals.get(interaction.customId);
 
-      // SELECTMENUS -----------------------------------
+        if (!modal) return interaction.reply("This modal is not work...");
+
+        modal.run(client, interaction);
+
+        // SELECTMENUS -----------------------------------
+      }
+
+      else if (interaction.isUserSelectMenu() && client.selectMenus.get(interaction.customId)) {
+
+        const selectMenu = client.selectMenus.get(interaction.customId);
+
+        if (!selectMenu) return interaction.reply("This selectmenu is not work...");
+
+        if (!interaction.member.permissions.has([selectMenu.permissions])) return interaction.reply({ content: `Vous n'avez pas la permission d'executer ce select menu !`, ephemeral: true })
+
+        selectMenu.run(client, interaction);
+      } else if (interaction.isStringSelectMenu() && client.selectMenus.get(interaction.customId)) {
+
+
+        const selectMenu = client.selectMenus.get(interaction.customId);
+
+        if (!selectMenu) return interaction.reply("This selectmenu is not work...");
+
+        if (!interaction.member.permissions.has([selectMenu.permissions])) return interaction.reply({ content: `Vous n'avez pas la permission d'utiliser ce select menu !`, ephemeral: true })
+
+        selectMenu.run(client, interaction);
+      }
+    } catch (error) {
+
+      commandError.send(client, interaction, error);
+
     }
-
-    else if (interaction.isUserSelectMenu() && client.selectMenus.get(interaction.customId)) {
-
-      const selectMenu = client.selectMenus.get(interaction.customId);
-
-      if (!selectMenu) return interaction.reply("This selectmenu is not work...");
-      
-      if (!interaction.member.permissions.has([selectMenu.permissions])) return interaction.reply({ content: `Vous n'avez pas la permission d'executer ce select menu !`, ephemeral: true })
-      
-      selectMenu.run(client, interaction);
-    } else if (interaction.isStringSelectMenu() && client.selectMenus.get(interaction.customId)) {
-
-
-      const selectMenu = client.selectMenus.get(interaction.customId);
-
-      if (!selectMenu) return interaction.reply("This selectmenu is not work...");
-      
-      if (!interaction.member.permissions.has([selectMenu.permissions])) return interaction.reply({ content: `Vous n'avez pas la permission d'utiliser ce select menu !`, ephemeral: true })
-
-      selectMenu.run(client, interaction);
-    }
-
   }
 }

@@ -1,8 +1,8 @@
 const { ActionRowBuilder, CommandInteraction, StringSelectMenuBuilder, UserSelectMenuBuilder, InteractionCollector, StringSelectMenuOptionBuilder, PermissionFlagsBits, Colors } = require('discord.js');
-const { updateUsersTeam } = require('../../functions/Party/updateUsersTeam.js');
-const { getAllTheTeam } = require('../../functions/Party/getAllTheTeam');
-const { teamManager } = require('../../functions/Fs/TeamManager.js');
-const { createEmbed } = require('../../functions/All/Embeds');
+const { updateUsersTeam } = require('../../functions/party/updateUsersTeam.js');
+const { getAllTheTeam } = require('../../functions/party/getAllTheTeam');
+const { teamManager } = require('../../functions/fs/TeamManager.js');
+const { createEmbed } = require('../../functions/all/Embeds');
 
 const emojis = require('../../utils/emojis.json');
 

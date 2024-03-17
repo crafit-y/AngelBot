@@ -1,6 +1,6 @@
 const Logger = require('../../utils/Logger');
-const { liveManager } = require('../../functions/Fs/LiveManager.js');
-const { partyManager } = require('../../functions/Fs/PartyManager.js');
+const { liveManager } = require('../../functions/fs/LiveManager.js');
+const { partyManager } = require('../../functions/fs/PartyManager.js');
 
 const emojis = require('../../utils/emojis.json');
 const IDS = require('../../utils/ids.json');
