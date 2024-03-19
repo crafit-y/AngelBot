@@ -14,7 +14,6 @@
   "top1": "🥇",
   "top2": "🥈",
   "top3": "🥉",
-  
   "onLive": "🟢",
   "offLive": "🔴",
   "away": "🟠",
@@ -31,5 +30,9 @@
   "music-resume": "▶️",
   "music-skip": "⏩",
   "music-back": "⏪",
-  "music-shuffle": "🔀"
+  "music-shuffle": "🔀",
+  "music-sound-low": "🔈",
+  "music-sound-medium": "🔉",
+  "music-sound-max": "🔊",
+  "music-sound-muted": "🔇"
 }

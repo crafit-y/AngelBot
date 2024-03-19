@@ -1,34 +1,31 @@
-const { EmbedBuilder, Colors } = require('discord.js');
-const { createEmbed } = require('../all/Embeds');
+const { GuildMember } = require('discord.js');
 const emojis = require('../../utils/emojis.json');
 const IDS = require('../../utils/ids.json');
 
-async function moveUsersToTheVoiceChannel(client, interaction, users, channelId, team) {
+async function moveUsersToTheVoiceChannel(client, users, channelId, team) {
   try {
     const guild = client.guilds.cache.get(IDS.OTHER_IDS.GUILD);
-    const channel = guild.channels.cache.get(`${channelId}`);
-    let actions = [];
+    const channel = guild.channels.cache.get(channelId);
+    const actions = [];
+
+    actions.push(`\n**${emojis.teams} - Team${team} is moving to > ${channel.name}**`);
 
     for (const userId of users) {
+      const member = await guild.members.fetch(userId);
 
-      const member = await guild.members.fetch(`${userId}`);
-
-      if (member.voice.channel !== null) {
+      if (member instanceof GuildMember && member.voice.channel && userId !== IDS.OTHER_IDS.BOT) {
         await member.voice.setChannel(channel);
-        actions.push(`${emojis.success} - User moved ➔ ${member}`);
+        actions.push(`\n> ${emojis['music-sound-max']} - User moved ➔ ${member}`);
       } else {
-        actions.push(`${emojis.error} - User not connected on a voice channel ➔ ${member}`);
+        actions.push(`\n> ${emojis['music-sound-muted']} - User not connected on a voice channel ➔ ${member}`);
       }
-
-      await new Promise(resolve => setTimeout(resolve, 100)).catch(O_o => { console.log(O_o) });
     }
 
-    guild.channels.cache.get(IDS.CHANNELS.LOG).send({ embeds: [await createEmbed.log(interaction.member, `### ${emojis.info} | LOGS - Team${team} is moving to > ${channel}\n> ${actions.join("\n> ")}`)] });
-
+    return actions;
   } catch (error) {
     console.error('Error moving users to voice channel:', error);
+    return []; // Return empty array to signify failure
   }
 }
-
 
 module.exports = { moveUsersToTheVoiceChannel };

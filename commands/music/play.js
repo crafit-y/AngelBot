@@ -1,11 +1,14 @@
-const { EmbedBuilder, ApplicationCommandOptionType, Colors, StringSelectMenuBuilder, StringSelectMenuOptionBuilder } = require("discord.js");
-const { joinVoiceChannel, getVoiceConnection } = require('@discordjs/voice');
-const emojis = require("../../utils/emojis.json");
+const { EmbedBuilder, ApplicationCommandOptionType, Colors } = require("discord.js");
+const { joinVoiceChannel, getVoiceConnection, createAudioPlayer, createAudioResource, AudioPlayerStatus, StreamType } = require('@discordjs/voice');
 const { useQueue } = require("discord-player");
 const { InitializeQueueListEmbed, QueueErrorCheck } = require("../../functions/music/queueListEmbed");
 const { createEmbed } = require("../../functions/all/Embeds");
 const { loopSelection } = require("../../functions/music/loop-selection");
 const { DTBM } = require("../../functions/all/DTBM");
+const { Readable } = require('stream');
+const axios = require('axios');
+const emojis = require("../../utils/emojis.json");
+const { PlayASound } = require("../../functions/all/PlayASound");
 
 module.exports = {
     name: 'music',
@@ -108,75 +111,113 @@ module.exports = {
 };
 
 async function handlePlayCommand(client, interaction, channel) {
-    // Code de gestion de la commande "play"
     const link = interaction.options.getString('link');
-    const player = client.player;
 
     if (!channel) return interaction.editReply('You are not connected to a voice channel!');
 
     const embed = new EmbedBuilder()
-        .setDescription(`${emojis.loading} Shearing \`${link}\` on YouTube...`)
+        .setDescription(`${emojis.loading} Shearing \`${link}\`...`)
         .setColor(Colors.Orange);
     await interaction.editReply({ embeds: [embed] });
 
-    const searchResult = await player.search(link, { requestedBy: interaction.user });
+    // Définir les expressions régulières pour vérifier différents formats de lien Discord
+    const discordMessageLinkRegex = /discord\.com\/channels\/(\d{17,19})\/(\d{17,19})\/(\d{17,19})/;
 
-    if (!searchResult.tracks.length) {
-        await interaction.editReply(`We found no tracks for ${link}!`);
-        return;
-    } else {
-        try {
-            const connection = joinVoiceChannel({
-                channelId: channel.id,
-                guildId: channel.guild.id,
-                adapterCreator: channel.guild.voiceAdapterCreator,
-                selfDeaf: true,
-            });
+    // Vérifier si le lien correspond à un lien de message Discord
+    if (discordMessageLinkRegex.test(link)) {
+        // Extrait l'ID du serveur, du canal et du message à partir du lien
+        const messageLink = link.split('/');
+        const guildId = messageLink[4];
+        const channelId = messageLink[5];
+        const messageId = messageLink[6];
 
-            if (!connection) {
-                return interaction.editReply("Impossible de rejoindre le canal vocal.");
-            }
+        // Récupère le message à partir de l'ID du serveur, du canal et du message
+        const targetMessage = await client.guilds.cache.get(guildId)?.channels.cache.get(channelId)?.messages.fetch(messageId);
 
-            await player.play(channel, searchResult, {
-                nodeOptions: {
-                    metadata: {
-                        channel: interaction.channel,
-                        client: interaction.guild.members.me,
-                        requestedBy: interaction.user,
-                    },
-                    selfDeaf: true,
-                    volume: 80,
-                    leaveOnEmpty: true,
-                    leaveOnEmptyCooldown: 300000,
-                    leaveOnEnd: true,
-                    leaveOnEndCooldown: 300000,
-                },
-            });
-
-            const embed = new EmbedBuilder()
-                .setColor(Colors.Green)
-                .setFooter({ text: `Added by ${interaction.user.username}`, iconURL: interaction.user.avatarURL() })
-                .setTimestamp();
-
-            if (searchResult.hasPlaylist()) {
-                const playlist = searchResult.playlist
-
-                embed.setTitle(`${emojis.success} Playlist added to queue !`)
-                    .setDescription(`**${searchResult.tracks.length} songs from [${playlist.title}](${playlist.url})** have been added to the Queue !`)
-                    .setThumbnail(playlist.thumbnail.url)
-            } else {
-                const track = searchResult.tracks[0];
-
-                embed.setTitle(`${emojis.success} Sound added to queue !`)
-                    .setDescription(`[${track.title}](${track.url}) are been added to the Queue !\n**Duration:** *${track.duration}*\n**Artist:** *${track.author}*`)
-                    .setThumbnail(track.thumbnail)
-            }
-
-            await interaction.editReply({ embeds: [embed], components: [DTBM.createButton()] });
-        } catch (e) {
-            console.error(e);
-            return interaction.followUp(`Something went wrong: ${e}`);
+        if (!targetMessage) {
+            return await interaction.editReply({ embeds: [await createEmbed.embed(`${emojis.error} The Discord interaction link is invalid or the interaction does not exist.`, Colors.Red)] });
         }
+
+        // Gérer le message Discord trouvé
+        handleDiscordMessage(targetMessage, interaction);
+    }
+    // Si ce n'est ni un lien de message Discord ni un ID de message Discord, gérer le lien comme une autre URL
+    else {
+        // Gérer le lien comme une URL normale
+        handleOtherLink(client, channel, interaction);
+    }
+}
+
+// Fonction pour gérer le message Discord trouvé
+async function handleDiscordMessage(message, interaction) {
+    // Définir une fonction de rappel pour traiter les messages
+    async function handleMessage(message) {
+        await interaction.editReply(message);
+    }
+
+    // Appeler la fonction generate avec la fonction de rappel
+    await PlayASound.aDiscordLink(handleMessage, message, interaction);
+}
+
+// Fonction pour gérer les autres liens
+async function handleOtherLink(client, channel, interaction) {
+    // Gérer le lien comme une URL normale pour la lecture d'audio
+    try {
+
+        const player = client.player;
+
+        const searchResult = await player.search(link, { requestedBy: interaction.user }).catch(() => { });
+
+        const connection = joinVoiceChannel({
+            channelId: channel.id,
+            guildId: channel.guild.id,
+            adapterCreator: channel.guild.voiceAdapterCreator,
+            selfDeaf: true,
+        });
+
+        if (!connection) {
+            return interaction.editReply("Impossible de rejoindre le canal vocal.");
+        }
+
+        await player.play(channel, searchResult, {
+            nodeOptions: {
+                metadata: {
+                    channel: interaction.channel,
+                    client: interaction.guild.members.me,
+                    requestedBy: interaction.user,
+                },
+                selfDeaf: true,
+                volume: 80,
+                leaveOnEmpty: true,
+                leaveOnEmptyCooldown: 300000,
+                leaveOnEnd: true,
+                leaveOnEndCooldown: 300000,
+            },
+        });
+
+        const embed = new EmbedBuilder()
+            .setColor(Colors.Green)
+            .setFooter({ text: `Added by ${interaction.user.username}`, iconURL: interaction.user.avatarURL() })
+            .setTimestamp();
+
+        if (searchResult.hasPlaylist()) {
+            const playlist = searchResult.playlist
+
+            embed.setTitle(`${emojis.success} Playlist added to queue !`)
+                .setDescription(`**${searchResult.tracks.length} songs from [${playlist.title}](${playlist.url})** have been added to the Queue !`)
+                .setThumbnail(playlist.thumbnail.url)
+        } else {
+            const track = searchResult.tracks[0];
+
+            embed.setTitle(`${emojis.success} Sound added to queue !`)
+                .setDescription(`[${track.title}](${track.url}) are been added to the Queue !\n**Duration:** *${track.duration}*\n**Artist:** *${track.author}*`)
+                .setThumbnail(track.thumbnail)
+        }
+
+        await interaction.editReply({ embeds: [embed], components: [DTBM.createButton()] });
+    } catch (error) {
+        console.error(error);
+        await interaction.editReply({ embeds: [await createEmbed.embed(`${emojis.error} An error occurred while fetching the audio file.`, Colors.Red)] });
     }
 }
 
@@ -250,58 +291,58 @@ async function handleOptionsCommand(client, interaction, queue) {
 
 /*
 // Après avoir ajouté une piste à la file d'attente
-        const queue = useQueue(interaction.guild.id);
+const queue = useQueue(interaction.guild.id);
  
-        if (!queue || !queue.node.isPlaying()) {
-            return interaction.followUp("Aucune piste n'est en cours de lecture.");
-        }
+if (!queue || !queue.node.isPlaying()) {
+    return interaction.followUp("Aucune piste n'est en cours de lecture.");
+}
  
-        const loopEnabled = !queue.loopMode;
+const loopEnabled = !queue.loopMode;
  
-        queue.setRepeatMode(1);
-        await interaction.followUp(`Boucle ${loopEnabled ? "activée" : "désactivée"}.`);
+queue.setRepeatMode(1);
+await interaction.followUp(`Boucle ${loopEnabled ? "activée" : "désactivée"}.`);
  
  
  
 const embed = new EmbedBuilder()
-    .setDescription(
-        `${emojis.loading} Shearing the audio...`
-    )
-    .setColor(Colors.Orange)
+.setDescription(
+`${emojis.loading} Shearing the audio...`
+)
+.setColor(Colors.Orange)
  
 await interaction.reply({ embeds: [embed] });
  
 function isYouTubeLink(string) {
-    const youtubeLinkRegex = /^(https?:\/\/)?(www\.)?youtube\.com\/watch\?v=[\w-]{11}$/;
-    const youtubeShortLinkRegex = /^(https?:\/\/)?(www\.)?youtu\.be\/[\w-]{11}$/;
-    return youtubeLinkRegex.test(string) || youtubeShortLinkRegex.test(string);
+const youtubeLinkRegex = /^(https?:\/\/)?(www\.)?youtube\.com\/watch\?v=[\w-]{11}$/;
+const youtubeShortLinkRegex = /^(https?:\/\/)?(www\.)?youtu\.be\/[\w-]{11}$/;
+return youtubeLinkRegex.test(string) || youtubeShortLinkRegex.test(string);
 }
  
 function isYouTubePlaylist(string) {
-    const youtubePlaylistRegex = /^(https?:\/\/)?(www\.)?youtube\.com\/playlist\?list=[\w-]{34}$/;
-    return youtubePlaylistRegex.test(string);
+const youtubePlaylistRegex = /^(https?:\/\/)?(www\.)?youtube\.com\/playlist\?list=[\w-]{34}$/;
+return youtubePlaylistRegex.test(string);
 }
  
 function isYouTubeVideoName(string) {
-    const youtubeVideoNameRegex = /^[A-Za-z0-9-_]{11}$/;
-    return youtubeVideoNameRegex.test(string);
+const youtubeVideoNameRegex = /^[A-Za-z0-9-_]{11}$/;
+return youtubeVideoNameRegex.test(string);
 }
  
 if (isYouTubeLink(link)) {
  
-    console.log("C'est un lien YouTube");
+console.log("C'est un lien YouTube");
  
 } else if (isYouTubePlaylist(link)) {
  
-    console.log("C'est une playlist YouTube");
+console.log("C'est une playlist YouTube");
  
 } else if (isYouTubeVideoName(link)) {
  
-    console.log("C'est le nom d'une vidéo YouTube");
+console.log("C'est le nom d'une vidéo YouTube");
  
 } else {
  
-    console.log("Ce n'est pas un lien YouTube valide");
+console.log("Ce n'est pas un lien YouTube valide");
  
 }
  
@@ -346,140 +387,140 @@ if (isYouTubeLink(link)) {
 /*const discordLinkRegex = /discord\.com\/channels\/(\d{17,19})\/(\d{17,19})\/(\d{17,19})/;
  
 const embed = new EmbedBuilder()
-    .setDescription(
-        `${emojis.loading} Shearing the audio...`
-    )
-    .setColor(Colors.Orange)
+.setDescription(
+`${emojis.loading} Shearing the audio...`
+)
+.setColor(Colors.Orange)
  
 await interaction.reply({ embeds: [embed] });
  
 if (discordLinkRegex.test(link)) {
-    const interactionId = link.split('/').pop();
-    const targetinteraction = await interaction.channel.interactions.fetch(interactionId);
+const interactionId = link.split('/').pop();
+const targetMessage = await interaction.channel.interactions.fetch(interactionId);
  
-    if (!targetinteraction) {
-        return interaction.reply('The Discord interaction link is invalid or the interaction does not exist.');
-    }
+if (!targetMessage) {
+return interaction.reply('The Discord interaction link is invalid or the interaction does not exist.');
+}
  
-    const attachment = targetinteraction.attachments.first();
+const attachment = targetMessage.attachments.first();
  
-    if (!attachment) {
-        return interaction.reply('The Discord interaction does not contain an audio file attachment.');
-    }
+if (!attachment) {
+return interaction.reply('The Discord interaction does not contain an audio file attachment.');
+}
  
-    const audioUrl = attachment.url;
+const audioUrl = attachment.url;
  
-    try {
-        const response = await axios.get(audioUrl, { responseType: 'stream' });
+try {
+const response = await axios.get(audioUrl, { responseType: 'stream' });
  
-        const voiceChannel = interaction.member.voice.channel;
+const voiceChannel = interaction.member.voice.channel;
  
-        if (!voiceChannel) {
-            return interaction.reply('You must be connected to a voice channel to play an audio file.');
-        }
+if (!voiceChannel) {
+    return interaction.reply('You must be connected to a voice channel to play an audio file.');
+}
  
-        const connection = joinVoiceChannel({
-            channelId: voiceChannel.id,
-            guildId: voiceChannel.guild.id,
-            adapterCreator: voiceChannel.guild.voiceAdapterCreator,
-        });
+const connection = joinVoiceChannel({
+    channelId: voiceChannel.id,
+    guildId: voiceChannel.guild.id,
+    adapterCreator: voiceChannel.guild.voiceAdapterCreator,
+});
  
-        const player = createAudioPlayer();
+const player = createAudioPlayer();
  
-        /*player.on(AudioPlayerStatus.Idle, () => {
-            connection.destroy();
-        });
+/*player.on(AudioPlayerStatus.Idle, () => {
+    connection.destroy();
+});
  
-        const stream = Readable.from(response.data);
+const stream = Readable.from(response.data);
  
-        const resource = createAudioResource(stream, {
-            inputType: StreamType.Arbitrary,
-            inlineVolume: true,
-        });
+const resource = createAudioResource(stream, {
+    inputType: StreamType.Arbitrary,
+    inlineVolume: true,
+});
  
-        const embed2 = new EmbedBuilder()
-            .setDescription(
-                `${emojis.music} The audio file \"${attachment.name}\" are playing now on <#${voiceChannel.id}>`
-            )
-            .setColor(Colors.Green)
+const embed2 = new EmbedBuilder()
+    .setDescription(
+        `${emojis.music} The audio file \"${attachment.name}\" are playing now on <#${voiceChannel.id}>`
+    )
+    .setColor(Colors.Green)
  
-        await interaction.editReply({ embeds: [embed2] });
+await interaction.editReply({ embeds: [embed2] });
  
-        player.play(resource);
-        connection.subscribe(player);
+player.play(resource);
+connection.subscribe(player);
  
-    } catch (error) {
+} catch (error) {
  
-        console.error(error);
+console.error(error);
  
-        const embed = new EmbedBuilder()
-            .setDescription(
-                `${emojis.error} An error occurred while fetching the audio file.`
-            )
-            .setColor(Colors.Red)
+const embed = new EmbedBuilder()
+    .setDescription(
+        `${emojis.error} An error occurred while fetching the audio file.`
+    )
+    .setColor(Colors.Red)
  
-        await interaction.editReply({ embeds: [embed] });
-    }
+await interaction.editReply({ embeds: [embed] });
+}
 } else if (link.match(/(http(s)?:\/\/)?((w){3}.)?youtu(be|.be)?(\.com)?\/.+/g)) {
-    const embed = new EmbedBuilder()
-        .setDescription(
-            `${emojis.error} Les liens youtube ne sont pas encore pris en charge !`
-        )
-        .setColor(Colors.Red)
+const embed = new EmbedBuilder()
+.setDescription(
+    `${emojis.error} Les liens youtube ne sont pas encore pris en charge !`
+)
+.setColor(Colors.Red)
  
-    await interaction.editReply({ embeds: [embed] });
-    //return
+await interaction.editReply({ embeds: [embed] });
+//return
  
-    try {
-        const voiceChannel = interaction.member.voice.channel;
+try {
+const voiceChannel = interaction.member.voice.channel;
  
-        if (!voiceChannel) {
-            return interaction.reply('You must be connected to a voice channel to play a YouTube music.');
-        }
+if (!voiceChannel) {
+    return interaction.reply('You must be connected to a voice channel to play a YouTube music.');
+}
  
-        const connection = joinVoiceChannel({
-            channelId: voiceChannel.id,
-            guildId: voiceChannel.guild.id,
-            adapterCreator: voiceChannel.guild.voiceAdapterCreator,
-        });
+const connection = joinVoiceChannel({
+    channelId: voiceChannel.id,
+    guildId: voiceChannel.guild.id,
+    adapterCreator: voiceChannel.guild.voiceAdapterCreator,
+});
  
-        const player = createAudioPlayer();
+const player = createAudioPlayer();
  
-        const stream = ytdl(link, { filter: 'audioonly' });
+const stream = ytdl(link, { filter: 'audioonly' });
  
-        const resource = createAudioResource(stream, {
-            inputType: StreamType.Arbitrary,
-            inlineVolume: true,
-        });
+const resource = createAudioResource(stream, {
+    inputType: StreamType.Arbitrary,
+    inlineVolume: true,
+});
  
-        player.play(resource);
-        connection.subscribe(player);
+player.play(resource);
+connection.subscribe(player);
  
-        const embed2 = new EmbedBuilder()
-            .setDescription(`${emojis.music} The audio file "${link}" is now playing in <#${voiceChannel.id}>`)
-            .setColor(Colors.Green);
+const embed2 = new EmbedBuilder()
+    .setDescription(`${emojis.music} The audio file "${link}" is now playing in <#${voiceChannel.id}>`)
+    .setColor(Colors.Green);
  
-        await interaction.editReply({ embeds: [embed2] });
-    } catch (error) {
-        console.error(error);
+await interaction.editReply({ embeds: [embed2] });
+} catch (error) {
+console.error(error);
  
-        const embed = new EmbedBuilder()
-            .setDescription(`${emojis.error} An error occurred while fetching the audio file.`)
-            .setColor(Colors.Red);
+const embed = new EmbedBuilder()
+    .setDescription(`${emojis.error} An error occurred while fetching the audio file.`)
+    .setColor(Colors.Red);
  
-        await interaction.editReply({ embeds: [embed] });
-    }
+await interaction.editReply({ embeds: [embed] });
+}
  
  
 } else {
  
-    const embed = new EmbedBuilder()
-        .setDescription(
-            `${emojis.error} Le lien "${link}" n'est pas pris en charge.`
-        )
-        .setColor(Colors.Red)
+const embed = new EmbedBuilder()
+.setDescription(
+    `${emojis.error} Le lien "${link}" n'est pas pris en charge.`
+)
+.setColor(Colors.Red)
  
-    await interaction.editReply({ embeds: [embed] });
-    return
+await interaction.editReply({ embeds: [embed] });
+return
  
 }*/
