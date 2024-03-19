@@ -109,7 +109,7 @@ module.exports = {
             }
 
             // Appeler la fonction generate avec la fonction de rappel
-            await PlayASound.aDiscordLink(handleMessage, message, interaction);
+            await PlayASound.aDiscordLink(handleMessage, client, message, interaction);
         }
     }
 }

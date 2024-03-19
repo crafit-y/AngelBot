@@ -92,9 +92,18 @@ async function BuildRowComponents(queue, currentPage, totalPages) {
 }
 
 
-async function QueueErrorCheck(interaction, string) {
+async function QueueErrorCheck(interaction, string, discordLink = false) {
     if (string) {
-        const embed = await createEmbed.embed(`${emojis.error} No music playing`, Colors.Red)
+
+        let embedString;
+
+        if (!discordLink) {
+            embedString = "No music playing";
+        } else {
+            embedString = "Music queued is playing, you can't play a queued music and a discord link in same time !";
+        }
+
+        const embed = await createEmbed.embed(`${emojis.error} ${embedString}`, Colors.Red)
 
         interaction.reply({ embeds: [embed], components: [DTBM.createButton()] }).catch(() => interaction.editReply({ embeds: [embed], components: [DTBM.createButton()] }));
 

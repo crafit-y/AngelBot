@@ -5,21 +5,20 @@ const { InitializeQueueListEmbed, QueueErrorCheck } = require("../../functions/m
 const { createEmbed } = require("../../functions/all/Embeds");
 const { loopSelection } = require("../../functions/music/loop-selection");
 const { DTBM } = require("../../functions/all/DTBM");
-const { Readable } = require('stream');
-const axios = require('axios');
 const emojis = require("../../utils/emojis.json");
 const { PlayASound } = require("../../functions/all/PlayASound");
 
+// Module export
 module.exports = {
     name: 'music',
     category: 'music',
-    description: 'Say a link interaction on voice channel',
+    description: 'Manage music-related interactions on voice channels',
     OwnerOnly: false,
     permissions: [],
     options: [
         {
             name: 'play',
-            description: 'play a music',
+            description: 'Play a music track',
             type: ApplicationCommandOptionType.Subcommand,
             options: [
                 {
@@ -32,12 +31,12 @@ module.exports = {
         },
         {
             name: 'options',
-            description: 'Choices an options fro the music',
+            description: 'Choose an option for the music',
             type: ApplicationCommandOptionType.Subcommand,
             options: [
                 {
                     name: 'selected-option',
-                    description: 'Selected option to send at bot',
+                    description: 'Selected option to send to the bot',
                     type: ApplicationCommandOptionType.String,
                     required: true,
                     choices: [
@@ -58,114 +57,101 @@ module.exports = {
         },
         {
             name: 'disconnect',
-            description: 'Disconnect my current voice channel',
+            description: 'Disconnect from the current voice channel',
             type: ApplicationCommandOptionType.Subcommand,
         },
     ],
-    async run(client, interaction) {
+    run: async (client, interaction) => {
         const action = interaction.options.getSubcommand();
         const queue = useQueue(interaction.guild.id);
         const channel = interaction.member.voice.channel;
-        const choise = interaction.options.getString('selected-option');
+        const choice = interaction.options.getString('selected-option');
 
         switch (action.toLowerCase()) {
             case "play":
                 await interaction.deferReply();
-                await handlePlayCommand(client, interaction, channel);
+                await handlePlayCommand(client, interaction, channel, queue);
                 break;
             case "options":
-                await interaction.deferReply({ ephemeral: choise !== "queue-list" ? true : false });
+                await interaction.deferReply({ ephemeral: choice !== "queue-list" });
                 await handleOptionsCommand(client, interaction, queue);
                 break;
             case "join":
                 await interaction.deferReply({ ephemeral: true });
-
-                if (!channel) return await interaction.editReply('You are not connected to a voice channel!');
-                if (getVoiceConnection(interaction.guild.id)) return await interaction.editReply('I\'m already connected to a voice channel!');
-
-                const connection = joinVoiceChannel({
-                    channelId: channel.id,
-                    guildId: channel.guild.id,
-                    adapterCreator: channel.guild.voiceAdapterCreator,
-                    selfDeaf: true,
-                });
-
-                if (!connection) return await interaction.editReply("Can't join this channel !");
-
-                await interaction.editReply(`${channel} joined !`);
+                await handleJoinCommand(interaction, channel);
                 break;
             case "disconnect":
                 await interaction.deferReply({ ephemeral: true });
-                const disconnection = getVoiceConnection(interaction.guild.id);
-
-                if (!channel) return await interaction.editReply('You are not connected to a voice channel!');
-                if (!disconnection) return await interaction.editReply('I\'m not connected to a voice channel!');
-
-                disconnection.disconnect("Force disconnect");
-
-                await interaction.editReply(`Disconnected !`);
+                await handleDisconnectCommand(interaction, channel);
                 break;
-
         }
     }
 };
 
-async function handlePlayCommand(client, interaction, channel) {
+// Function to handle the "play" command
+async function handlePlayCommand(client, interaction, channel, queue) {
     const link = interaction.options.getString('link');
 
     if (!channel) return interaction.editReply('You are not connected to a voice channel!');
 
     const embed = new EmbedBuilder()
-        .setDescription(`${emojis.loading} Shearing \`${link}\`...`)
+        .setDescription(`${emojis.loading} Fetching \`${link}\`...`)
         .setColor(Colors.Orange);
     await interaction.editReply({ embeds: [embed] });
 
-    // Définir les expressions régulières pour vérifier différents formats de lien Discord
+    // Define regular expressions to check different Discord link formats
     const discordMessageLinkRegex = /discord\.com\/channels\/(\d{17,19})\/(\d{17,19})\/(\d{17,19})/;
 
-    // Vérifier si le lien correspond à un lien de message Discord
+    // Check if the link matches a Discord message link
     if (discordMessageLinkRegex.test(link)) {
-        // Extrait l'ID du serveur, du canal et du message à partir du lien
+        // Extract server, channel, and message IDs from the link
         const messageLink = link.split('/');
         const guildId = messageLink[4];
         const channelId = messageLink[5];
         const messageId = messageLink[6];
 
-        // Récupère le message à partir de l'ID du serveur, du canal et du message
+        // Fetch the message from the server, channel, and message IDs
         const targetMessage = await client.guilds.cache.get(guildId)?.channels.cache.get(channelId)?.messages.fetch(messageId);
 
         if (!targetMessage) {
             return await interaction.editReply({ embeds: [await createEmbed.embed(`${emojis.error} The Discord interaction link is invalid or the interaction does not exist.`, Colors.Red)] });
         }
 
-        // Gérer le message Discord trouvé
-        handleDiscordMessage(targetMessage, interaction);
+        // Handle the found Discord message
+        handleDiscordMessage(client, targetMessage, interaction, queue);
     }
-    // Si ce n'est ni un lien de message Discord ni un ID de message Discord, gérer le lien comme une autre URL
+    // If it's neither a Discord message link nor a Discord message ID, handle the link as a regular URL
     else {
-        // Gérer le lien comme une URL normale
+        // Handle the link as a normal URL
         handleOtherLink(client, channel, interaction);
     }
 }
 
-// Fonction pour gérer le message Discord trouvé
-async function handleDiscordMessage(message, interaction) {
-    // Définir une fonction de rappel pour traiter les messages
-    async function handleMessage(message) {
-        await interaction.editReply(message);
-    }
+// Function to handle the found Discord message
+async function handleDiscordMessage(client, message, interaction, queue) {
+    
+    if (QueueErrorCheck(interaction, queue), true) {
 
-    // Appeler la fonction generate avec la fonction de rappel
-    await PlayASound.aDiscordLink(handleMessage, message, interaction);
+        if (queue) {
+            queue.delete();
+        }
+
+        // Define a callback function to handle messages
+        async function handleMessage(message) {
+            await interaction.editReply(message);
+        }
+
+        // Call the function to handle Discord link with the callback function
+        await PlayASound.aDiscordLink(handleMessage, client, message, interaction);
+
+    }
 }
 
-// Fonction pour gérer les autres liens
+// Function to handle other links
 async function handleOtherLink(client, channel, interaction) {
-    // Gérer le lien comme une URL normale pour la lecture d'audio
+    // Handle the link as a normal URL for audio playback
     try {
-
         const player = client.player;
-
         const searchResult = await player.search(link, { requestedBy: interaction.user }).catch(() => { });
 
         const connection = joinVoiceChannel({
@@ -176,7 +162,7 @@ async function handleOtherLink(client, channel, interaction) {
         });
 
         if (!connection) {
-            return interaction.editReply("Impossible de rejoindre le canal vocal.");
+            return interaction.editReply("Cannot join the voice channel.");
         }
 
         await player.play(channel, searchResult, {
@@ -217,310 +203,109 @@ async function handleOtherLink(client, channel, interaction) {
         await interaction.editReply({ embeds: [embed], components: [DTBM.createButton()] });
     } catch (error) {
         console.error(error);
-        await interaction.editReply({ embeds: [await createEmbed.embed(`${emojis.error} An error occurred while fetching the audio file.`, Colors.Red)] });
+        await interaction.editReply({ embeds: [await createEmbed.embed(`${emojis.error} The link \`${link}\` cannot be used !`, Colors.Red)] });
     }
 }
 
+// Function to handle the "options" command
 async function handleOptionsCommand(client, interaction, queue) {
-    // Code de gestion de la commande "options"
-    const choise = interaction.options.getString('selected-option');
+    const choice = interaction.options.getString('selected-option');
 
-    switch (choise) {
+    switch (choice) {
         case 'stop':
             await interaction.editReply({ embeds: [await createEmbed.embed(`${emojis.loading} Stopping...`)] });
-            QueueErrorCheck(!queue || !queue.node.isPlaying());
-            queue.delete();
-            await interaction.editReply({ embeds: [await createEmbed.embed(`${emojis["music-stop"]} Stopped !`)] });
+
+            if (QueueErrorCheck(interaction, !queue || !queue.node.isPlaying())) {
+                queue.delete();
+                await interaction.editReply({ embeds: [await createEmbed.embed(`${emojis["music-stop"]} Stopped !`)] });
+            }
+
             break;
 
         case 'pause-resume':
             await interaction.editReply({ embeds: [await createEmbed.embed(`${emojis.loading} Updating...`)] });
 
-            QueueErrorCheck(!queue);
+            if (QueueErrorCheck(interaction, !queue || !queue.node.isPlaying())) {
 
-            if (queue && !queue.node.isPlaying()) {
-                queue.node.resume();
-                await interaction.editReply({ embeds: [await createEmbed.embed(`${emojis["music-resume"]} Resumed !`)] });
-            } else {
-                queue.node.pause();
-                await interaction.editReply({ embeds: [await createEmbed.embed(`${emojis["music-pause"]} Paused !`)] });
+                if (queue && !queue.node.isPlaying()) {
+                    queue.node.resume();
+                    await interaction.editReply({ embeds: [await createEmbed.embed(`${emojis["music-resume"]} Resumed !`)] });
+                } else {
+                    queue.node.pause();
+                    await interaction.editReply({ embeds: [await createEmbed.embed(`${emojis["music-pause"]} Paused !`)] });
+                }
             }
+
             break;
 
         case 'loop':
 
-            QueueErrorCheck(!queue || !queue.node.isPlaying());
-
-            await loopSelection(client, interaction);
+            if (QueueErrorCheck(interaction, !queue || !queue.node.isPlaying())) {
+                await loopSelection(client, interaction);
+            }
 
             break;
 
         case 'skip':
             await interaction.editReply({ embeds: [await createEmbed.embed(`${emojis.loading} Skipping...`)] });
 
-            QueueErrorCheck(!queue || !queue.node.isPlaying());
-            queue.node.skip();
+            if (QueueErrorCheck(interaction, !queue || !queue.node.isPlaying())) {
+                queue.node.skip();
+                await interaction.editReply({ embeds: [await createEmbed.embed(`${emojis["music-skip"]} Skipped !`)] });
+            }
 
-            await interaction.editReply({ embeds: [await createEmbed.embed(`${emojis["music-skip"]} Skipped !`)] });
             break;
 
         case 'back':
             await interaction.editReply({ embeds: [await createEmbed.embed(`${emojis.loading} Going back...`)] });
 
-            QueueErrorCheck(!queue || !queue.node.isPlaying());
-
-            queue.history.back().catch(async (e) => {
-                return await interaction.editReply({ embeds: [await createEmbed.embed(`${emojis.error} ${e.message}`)] });
-            });
-
-            await interaction.editReply({
-                embeds: [await createEmbed.embed(`${emojis["music-back"]} Back again!`)]
-            });
+            if (QueueErrorCheck(interaction, !queue || !queue.node.isPlaying())) {
+                queue.history.back().catch(async (e) => {
+                    return await interaction.editReply({ embeds: [await createEmbed.embed(`${emojis.error} ${e.message}`)] });
+                });
+                await interaction.editReply({
+                    embeds: [await createEmbed.embed(`${emojis["music-back"]} Back again!`)]
+                });
+            }
 
             break;
 
         case 'queue-list':
-            QueueErrorCheck(!queue || !queue.node.isPlaying());
-            InitializeQueueListEmbed(interaction, 0)
+            if (QueueErrorCheck(interaction, !queue || !queue.node.isPlaying())) {
+                InitializeQueueListEmbed(interaction, 0)
+            }
+
             break;
     }
 }
 
+// Function to handle the "join" command
 
+async function handleJoinCommand(interaction, channel) {
+    if (!channel) return await interaction.editReply('You are not connected to a voice channel!');
+    if (getVoiceConnection(interaction.guild.id)) return await interaction.editReply('I\'m already connected to a voice channel!');
 
+    const connection = joinVoiceChannel({
+        channelId: channel.id,
+        guildId: channel.guild.id,
+        adapterCreator: channel.guild.voiceAdapterCreator,
+        selfDeaf: true,
+    });
 
-/*
-// Après avoir ajouté une piste à la file d'attente
-const queue = useQueue(interaction.guild.id);
- 
-if (!queue || !queue.node.isPlaying()) {
-    return interaction.followUp("Aucune piste n'est en cours de lecture.");
+    if (!connection) return await interaction.editReply("Can't join this channel!");
+
+    await interaction.editReply(`${channel} joined!`);
 }
- 
-const loopEnabled = !queue.loopMode;
- 
-queue.setRepeatMode(1);
-await interaction.followUp(`Boucle ${loopEnabled ? "activée" : "désactivée"}.`);
- 
- 
- 
-const embed = new EmbedBuilder()
-.setDescription(
-`${emojis.loading} Shearing the audio...`
-)
-.setColor(Colors.Orange)
- 
-await interaction.reply({ embeds: [embed] });
- 
-function isYouTubeLink(string) {
-const youtubeLinkRegex = /^(https?:\/\/)?(www\.)?youtube\.com\/watch\?v=[\w-]{11}$/;
-const youtubeShortLinkRegex = /^(https?:\/\/)?(www\.)?youtu\.be\/[\w-]{11}$/;
-return youtubeLinkRegex.test(string) || youtubeShortLinkRegex.test(string);
+
+// Function to handle the "disconnect" command
+
+async function handleDisconnectCommand(interaction, channel) {
+    const disconnection = getVoiceConnection(interaction.guild.id);
+
+    if (!channel) return await interaction.editReply('You are not connected to a voice channel!');
+    if (!disconnection) return await interaction.editReply('I\'m not connected to a voice channel!');
+
+    disconnection.disconnect("Force disconnect");
+
+    await interaction.editReply(`Disconnected!`);
 }
- 
-function isYouTubePlaylist(string) {
-const youtubePlaylistRegex = /^(https?:\/\/)?(www\.)?youtube\.com\/playlist\?list=[\w-]{34}$/;
-return youtubePlaylistRegex.test(string);
-}
- 
-function isYouTubeVideoName(string) {
-const youtubeVideoNameRegex = /^[A-Za-z0-9-_]{11}$/;
-return youtubeVideoNameRegex.test(string);
-}
- 
-if (isYouTubeLink(link)) {
- 
-console.log("C'est un lien YouTube");
- 
-} else if (isYouTubePlaylist(link)) {
- 
-console.log("C'est une playlist YouTube");
- 
-} else if (isYouTubeVideoName(link)) {
- 
-console.log("C'est le nom d'une vidéo YouTube");
- 
-} else {
- 
-console.log("Ce n'est pas un lien YouTube valide");
- 
-}
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
-/*const discordLinkRegex = /discord\.com\/channels\/(\d{17,19})\/(\d{17,19})\/(\d{17,19})/;
- 
-const embed = new EmbedBuilder()
-.setDescription(
-`${emojis.loading} Shearing the audio...`
-)
-.setColor(Colors.Orange)
- 
-await interaction.reply({ embeds: [embed] });
- 
-if (discordLinkRegex.test(link)) {
-const interactionId = link.split('/').pop();
-const targetMessage = await interaction.channel.interactions.fetch(interactionId);
- 
-if (!targetMessage) {
-return interaction.reply('The Discord interaction link is invalid or the interaction does not exist.');
-}
- 
-const attachment = targetMessage.attachments.first();
- 
-if (!attachment) {
-return interaction.reply('The Discord interaction does not contain an audio file attachment.');
-}
- 
-const audioUrl = attachment.url;
- 
-try {
-const response = await axios.get(audioUrl, { responseType: 'stream' });
- 
-const voiceChannel = interaction.member.voice.channel;
- 
-if (!voiceChannel) {
-    return interaction.reply('You must be connected to a voice channel to play an audio file.');
-}
- 
-const connection = joinVoiceChannel({
-    channelId: voiceChannel.id,
-    guildId: voiceChannel.guild.id,
-    adapterCreator: voiceChannel.guild.voiceAdapterCreator,
-});
- 
-const player = createAudioPlayer();
- 
-/*player.on(AudioPlayerStatus.Idle, () => {
-    connection.destroy();
-});
- 
-const stream = Readable.from(response.data);
- 
-const resource = createAudioResource(stream, {
-    inputType: StreamType.Arbitrary,
-    inlineVolume: true,
-});
- 
-const embed2 = new EmbedBuilder()
-    .setDescription(
-        `${emojis.music} The audio file \"${attachment.name}\" are playing now on <#${voiceChannel.id}>`
-    )
-    .setColor(Colors.Green)
- 
-await interaction.editReply({ embeds: [embed2] });
- 
-player.play(resource);
-connection.subscribe(player);
- 
-} catch (error) {
- 
-console.error(error);
- 
-const embed = new EmbedBuilder()
-    .setDescription(
-        `${emojis.error} An error occurred while fetching the audio file.`
-    )
-    .setColor(Colors.Red)
- 
-await interaction.editReply({ embeds: [embed] });
-}
-} else if (link.match(/(http(s)?:\/\/)?((w){3}.)?youtu(be|.be)?(\.com)?\/.+/g)) {
-const embed = new EmbedBuilder()
-.setDescription(
-    `${emojis.error} Les liens youtube ne sont pas encore pris en charge !`
-)
-.setColor(Colors.Red)
- 
-await interaction.editReply({ embeds: [embed] });
-//return
- 
-try {
-const voiceChannel = interaction.member.voice.channel;
- 
-if (!voiceChannel) {
-    return interaction.reply('You must be connected to a voice channel to play a YouTube music.');
-}
- 
-const connection = joinVoiceChannel({
-    channelId: voiceChannel.id,
-    guildId: voiceChannel.guild.id,
-    adapterCreator: voiceChannel.guild.voiceAdapterCreator,
-});
- 
-const player = createAudioPlayer();
- 
-const stream = ytdl(link, { filter: 'audioonly' });
- 
-const resource = createAudioResource(stream, {
-    inputType: StreamType.Arbitrary,
-    inlineVolume: true,
-});
- 
-player.play(resource);
-connection.subscribe(player);
- 
-const embed2 = new EmbedBuilder()
-    .setDescription(`${emojis.music} The audio file "${link}" is now playing in <#${voiceChannel.id}>`)
-    .setColor(Colors.Green);
- 
-await interaction.editReply({ embeds: [embed2] });
-} catch (error) {
-console.error(error);
- 
-const embed = new EmbedBuilder()
-    .setDescription(`${emojis.error} An error occurred while fetching the audio file.`)
-    .setColor(Colors.Red);
- 
-await interaction.editReply({ embeds: [embed] });
-}
- 
- 
-} else {
- 
-const embed = new EmbedBuilder()
-.setDescription(
-    `${emojis.error} Le lien "${link}" n'est pas pris en charge.`
-)
-.setColor(Colors.Red)
- 
-await interaction.editReply({ embeds: [embed] });
-return
- 
-}*/

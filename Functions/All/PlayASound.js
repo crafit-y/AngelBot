@@ -8,11 +8,11 @@ const IDS = require("../../utils/ids.json");
 const fs = require("fs");
 
 const PlayASound = {
-  async aDiscordLink(messageCallback, link, interaction) {
+  async aDiscordLink(messageCallback, client, link, interaction) {
     try {
       const audioUrl = getAudioUrlFromLink(link);
 
-      const { voiceChannel, player, connection } = await joinVoiceAndCreatePlayer(interaction);
+      const { voiceChannel, player, connection } = await joinVoiceAndCreatePlayer(client, interaction);
 
       const { data: stream } = await axios.get(audioUrl, { responseType: 'stream' });
       const resource = createAudioResource(Readable.from(stream), { inputType: StreamType.Arbitrary, inlineVolume: true });
@@ -21,6 +21,7 @@ const PlayASound = {
 
       player.play(resource);
       connection.subscribe(player);
+    
     } catch (error) {
       console.error(error);
       messageCallback({ embeds: [await createEmbed.embed(`${emojis.error} An error occurred while fetching the audio file.`, Colors.Red)] });

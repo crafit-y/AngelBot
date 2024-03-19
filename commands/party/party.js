@@ -1,8 +1,15 @@
 const { ApplicationCommandOptionType, Colors, PermissionFlagsBits } = require('discord.js');
-const { moveUsersToTheVoiceChannel, disconnectAllUsers, getTheTeamOfTheUser, getAllTheTeam, updateUsersTeam } = require('../../functions/party');
+const { moveUsersToTheVoiceChannel } = require('../../functions/party/MoveUsers.js');
+const { disconnectAllUsers } = require('../../functions/party/disconnectAllUsers');
+const { getTheTeamOfTheUser } = require('../../functions/party/getTheTeamOfTheUser.js');
+const { getAllTheTeam } = require('../../functions/party/getAllTheTeam');
+const { updateUsersTeam } = require('../../functions/party/updateUsersTeam.js');
 const { createEmbed } = require('../../functions/all/Embeds.js');
-const { teamManager, liveManager, partyManager, leaderBoard } = require('../../functions/fs');
+const { partyManager } = require('../../functions//fs/PartyManager.js');
+const { liveManager } = require('../../functions//fs/LiveManager.js');
+const { teamManager } = require('../../functions/fs/TeamManager.js');
 const { PlayASound } = require('../../functions/all/PlayASound.js');
+
 const emojis = require('../../utils/emojis.json');
 const IDS = require('../../utils/ids.json');
 
