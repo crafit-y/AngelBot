@@ -10,6 +10,7 @@ module.exports = {
   name: 'ready',
   once: true,
   async execute(client) {
+    Logger.client('-> Version v2.1.2 & Music v4.0');
     Logger.client('-> Le bot est prêt');
 
     const devGuild = await client.guilds.cache.get('1201436290059604079');
