@@ -4,7 +4,7 @@ const IDS = require('../../utils/ids.json');
 module.exports = {
     name: 'emit',
     description: 'Send an event to the bot.',
-    OwnerOnly: false,
+    OwnerOnly: true,
     permissions: ["ADMINISTRATOR"],
     options: [
         {
@@ -28,6 +28,14 @@ module.exports = {
                 {
                     name: 'guildRemove',
                     value: 'guildRemove'
+                },
+                {
+                    name: 'guildBanAdd',
+                    value: 'guildBanAdd'
+                },
+                {
+                    name: 'guildBanRemove',
+                    value: 'guildBanRemove'
                 }
             ]
         },
@@ -75,6 +83,14 @@ module.exports = {
 
             case 'guildRemove':
                 sendEvent(interaction.guild);
+            break;
+            
+            case 'guildBanAdd':
+                sendEvent(member);
+            break;
+
+            case 'guildBanRemove':
+                sendEvent(member);
             break;
         }
     }

@@ -1,4 +1,4 @@
-const { ApplicationCommandOptionType, Colors } = require('discord.js');
+const { ApplicationCommandOptionType, Colors, AttachmentBuilder } = require('discord.js');
 const { getTheTeamOfTheUser } = require('../../functions/party/getTheTeamOfTheUser');
 const { getAllTheTeam } = require('../../functions/party/getAllTheTeam');
 const { createEmbed } = require('../../functions/all/Embeds.js');
@@ -54,8 +54,9 @@ module.exports = {
         array.push(`> Position in leaderboard ➔ \`#${position !== -1 ? position : "<Not found>"}\``)
         array.push(`> Curently in the team ➔ ${await getTheTeamOfTheUser(member) != null ? `**Team${await getTheTeamOfTheUser(member)}**` : "*Not in any teams*"}`)
         array.push(`> Curently on live? ➔ ${party && isOnLive && isOnLiveTeam ? "On live 🟢" : "Not on live 🔴"}`)
+
         interaction.editReply({
-          embeds: [await createEmbed.embed(array.join("\n"), Colors.Yellow)]
+          embeds: [(await createEmbed.embed(array.join("\n"), Colors.Yellow))],
         })
         break;
 
@@ -78,9 +79,10 @@ module.exports = {
             const userString = `${emoji} - ${user} (\`${userData.wins} wins\`)`;
             embedArray.push(userString);
           }
+
           const embed = await createEmbed.embed(embedArray.join("\n"), Colors.Yellow);
           interaction.editReply({
-            embeds: [embed]
+            embeds: [embed],
           });
         } catch (error) {
           console.error('Error getting top win users:', error);
@@ -92,3 +94,16 @@ module.exports = {
     }
   }
 };
+
+async function fetchAndConvertAvatar(avatarURL) {
+  try {
+    const response = await fetch(avatarURL);
+    if (!response.ok) {
+      throw new Error(`Failed to fetch avatar. Status: ${response.status}`);
+    }
+    const buffer = Buffer.from(await response.arrayBuffer());
+    return await sharp(buffer).jpeg().toBuffer();
+  } catch (error) {
+    throw new Error(`Error fetching or converting avatar: ${error.message}`);
+  }
+}

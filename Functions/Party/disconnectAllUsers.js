@@ -2,6 +2,7 @@ const { EmbedBuilder, Colors } = require('discord.js');
 const { createEmbed } = require('../all/Embeds');
 const emojis = require('../../utils/emojis.json');
 const IDS = require('../../utils/ids.json');
+const { Webhook } = require('../all/WebHooks');
 
 async function disconnectAllUsers(client, interaction, CHANNELS, validUserIds) {
   try {
@@ -22,8 +23,8 @@ async function disconnectAllUsers(client, interaction, CHANNELS, validUserIds) {
       await new Promise(resolve => setTimeout(resolve, 500)).catch(O_o => { console.log(O_o) });
     }
 
-    guild.channels.cache.get(IDS.CHANNELS.LOG).send({ embeds: [await createEmbed.log(interaction.member, `### ${emojis.info} | LOGS - Users disconneted\n> ${array.join("\n> ")}`)] });
-  
+    await Webhook.send(guild.channels.cache.get(IDS.CHANNELS.LOG), "Party", client.user.displayAvatarURL(), null, [await createEmbed.log(interaction.member, `### ${emojis.info} | LOGS - Users disconneted\n> ${array.join("\n> ")}`)])
+
   } catch (error) {
     console.error('Error moving users to voice channel:', error);
   }

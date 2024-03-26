@@ -123,7 +123,7 @@ async function handlePlayCommand(client, interaction, channel, queue) {
     // If it's neither a Discord message link nor a Discord message ID, handle the link as a regular URL
     else {
         // Handle the link as a normal URL
-        handleOtherLink(client, channel, interaction);
+        handleOtherLink(client, channel, interaction, link);
     }
 }
 
@@ -148,7 +148,7 @@ async function handleDiscordMessage(client, message, interaction, queue) {
 }
 
 // Function to handle other links
-async function handleOtherLink(client, channel, interaction) {
+async function handleOtherLink(client, channel, interaction, link) {
     // Handle the link as a normal URL for audio playback
     try {
         const player = client.player;

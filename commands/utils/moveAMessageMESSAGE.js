@@ -3,7 +3,7 @@ const { MessageTransfer } = require('../../functions/utils/messageTransfer');
 
 
 module.exports = {
-  name: 'TransferMessage',
+  name: 'Transfer this message',
   type: ApplicationCommandType.Message,
   permissions: [PermissionFlagsBits.ManageMessages],
   async run(client, interaction) {

@@ -1,37 +1,23 @@
 const WebHookBuilder = {
-  async create(client, channel, reason = "not specified") {
+  createOrUpdate: async (client, channel, reason = "not specified") => {
     try {
-      return await channel.createWebhook({
-        name: client.user.displayName,
-        avatar: client.user.displayAvatarURL(),
-        reason: reason
-      });
-    } catch (error) {
-      console.error(error);
-      return null;
-    }
-  },
+      let webhook = (await channel.fetchWebhooks()).find(wh => wh.owner.id === client.user.id);
 
-  async edit(webhook, name, avatar, channel) {
-    try {
-      return await webhook.edit({
-        name: name,
-        avatar: avatar,
-        channel: channel.id
-      });
-    } catch (error) {
-      console.error(error);
-      return null;
-    }
-  },
+      if (!webhook) {
+        webhook = await channel.createWebhook({
+          name: client.user.username,
+          avatar: client.user.displayAvatarURL(),
+          reason: reason
+        });
+      } else {
+        await webhook.edit({
+          name: client.user.username,
+          avatar: client.user.displayAvatarURL(),
+          reason: reason
+        });
+      }
 
-  async reset(webhook, client, channel) {
-    try {
-      return await webhook.edit({
-        name: client.user.displayName,
-        avatar: client.user.displayAvatarURL(),
-        channel: channel.id
-      });
+      return webhook;
     } catch (error) {
       console.error(error);
       return null;
@@ -39,4 +25,25 @@ const WebHookBuilder = {
   }
 };
 
-module.exports = { WebHookBuilder };
+const Webhook = {
+  send: async (channel, name, avatarURL, content = null, embeds = null, files = null) => {
+    const webhook = await WebHookBuilder.createOrUpdate(channel.guild.client, channel);
+    if (!webhook) {
+      console.error("Failed to create or update webhook.");
+      return;
+    }
+
+    const webhookData = {
+      username: name,
+      avatarURL: avatarURL
+    };
+
+    if (content) webhookData.content = content;
+    if (embeds) webhookData.embeds = embeds;
+    if (files) webhookData.files = files;
+
+    await webhook.send(webhookData);
+  }
+};
+
+module.exports = { WebHookBuilder, Webhook };

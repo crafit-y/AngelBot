@@ -1,7 +1,7 @@
 const { EmbedBuilder, ApplicationCommandType, PermissionsBitField, PermissionFlagsBits } = require("discord.js");
 
 module.exports = {
-    name: 'userinfo',
+    name: 'User infos',
     type: ApplicationCommandType.User,
     OwnerOnly: false,
     permissions: ["MANAGE_MESSAGES"],

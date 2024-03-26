@@ -21,35 +21,40 @@ const PlayASound = {
 
       player.play(resource);
       connection.subscribe(player);
-    
+
     } catch (error) {
-      console.error(error);
+      //console.error(error);
       messageCallback({ embeds: [await createEmbed.embed(`${emojis.error} An error occurred while fetching the audio file.`, Colors.Red)] });
     }
   },
 
-  async anExistingFile(client, fileName = "Error") {
+  async anExistingFile(client, fileName = "Error", interaction = null) {
     try {
       const audioPath = `${process.cwd()}/utils/voiceLines/AngelBot-TTSMessage_${fileName}.mp3`;
-      await fs.access(audioPath); // Check if file exists
+      await fs.promises.access(audioPath); // Check if file exists
+
       const audioStream = fs.createReadStream(audioPath);
 
-      const { voiceChannel, player, connection } = await joinVoiceAndCreatePlayer(client);
+      const { voiceChannel, player, connection } = await joinVoiceAndCreatePlayer(client, interaction);
 
       const resource = createAudioResource(audioStream, { inputType: StreamType.Arbitrary, inlineVolume: true });
 
       player.play(resource);
       connection.subscribe(player);
     } catch (error) {
-      console.error(error);
+      //console.error(error);
     }
-  },
+  }
+
 };
 
 async function joinVoiceAndCreatePlayer(client, interaction = null) {
   let voiceChannel = interaction ? interaction.member.voice.channel : client.guilds.cache.get(IDS.OTHER_IDS.GUILD)?.channels.cache.get(IDS.CHANNELS.END);
 
-  if (!voiceChannel) throw new Error("You must be connected to a voice channel to play an audio file.");
+  if (!voiceChannel) return null; //throw new Error("You must be connected to a voice channel to play an audio file.");
+  else {
+
+  }
 
   const connection = joinVoiceChannel({
     channelId: voiceChannel.id,
@@ -63,7 +68,7 @@ async function joinVoiceAndCreatePlayer(client, interaction = null) {
 
 function getAudioUrlFromLink(link) {
   const attachment = link.attachments.first();
-  if (!attachment) throw new Error("The Discord interaction does not contain an audio file attachment.");
+  if (!attachment) return null;//throw new Error("The Discord interaction does not contain an audio file attachment.");
   return attachment.url;
 }
 

@@ -1,6 +1,6 @@
 const { ChannelSelectMenuBuilder, ActionRowBuilder, InteractionCollector } = require('discord.js');
 const { createEmbed } = require('../all/Embeds');
-const { WebHookBuilder } = require('../all/WebHooks');
+const { WebHookBuilder, Webhook } = require('../all/WebHooks');
 const emojis = require('../../utils/emojis.json');
 const IDS = require('../../utils/ids.json');
 
@@ -37,7 +37,7 @@ const MessageTransfer = {
           }
 
           channel = selectedChannel;
-          await transferMessage(client, message, channel, interaction, row);
+          await transferMessage(message, channel, interaction, row);
         });
 
         collector.on('end', async collected => {
@@ -47,7 +47,7 @@ const MessageTransfer = {
           }
         });
       } else {
-        await transferMessage(client, message, channel, interaction);
+        await transferMessage(message, channel, interaction);
       }
     } catch (error) {
       console.error(error);
@@ -56,26 +56,12 @@ const MessageTransfer = {
   },
 };
 
-async function transferMessage(client, message, channel, interaction, row) {
+async function transferMessage(message, channel, interaction, row) {
   try {
-    const webhooks = await channel.fetchWebhooks();
-    let webhook = webhooks.find(wh => wh.token);
-
-    if (!webhook) {
-      webhook = await WebHookBuilder.create(client, channel);
-    }
 
     let content = message.content;
-    if (!content.startsWith("*\(transfered message\)*")) {
-      content = "*\(transfered message\)*\n\n" + content;
-    }
-
-    const newMessage = await webhook.send({
-      content: content,
-      username: message.author.displayName,
-      avatarURL: message.author.displayAvatarURL(),
-      files: message.attachments.map(attachment => attachment.url)
-    });
+    const user = message.author;
+    const newMessage = await Webhook.send(channel, user.displayName, user.displayAvatarURL(), content, message.embeds, message.attachments.map(attachment => attachment.url))
 
     await interaction.editReply({ embeds: [await createEmbed.embed(`${emojis.success} The [message](${message.url}) of ${message.author} has been transfered to ${channel}.`)], components: [row], ephemeral: true });
 
