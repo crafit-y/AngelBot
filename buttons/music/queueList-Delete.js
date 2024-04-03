@@ -1,21 +1,27 @@
 const { useQueue } = require("discord-player");
 const emojis = require("../../utils/emojis.json");
-const { QueueErrorCheck } = require("../../functions/music/queueListEmbed");
-const { RefreshEmbed } = require("../../functions/music/RefreshTheEmbed");
+const QueueEmbedManager = require("../../functions/music/queueListEmbed");
+const { createEmbed } = require("../../functions/all/Embeds");
 
 module.exports = {
-    name: 'queuelistembed-delete',
-    permissions: [],
-    async run(client, interaction) {
-        try {
-            const queue = useQueue(interaction.guild.id);
-            QueueErrorCheck(interaction, !queue);
+  name: "queuelistembed-delete",
+  permissions: [],
+  async run(client, interaction) {
+    const queueEmbedManager = new QueueEmbedManager(interaction);
+    await interaction.deferUpdate();
+    try {
+      const queue = useQueue(interaction.guild.id);
+      if (!queue) return;
 
-            RefreshEmbed(interaction, 0, `${emojis['music-stop']} Stopping...`, null);
-            if (queue) return queue.delete();
-        } catch (error) {
-            console.error(error);
-            RefreshEmbed(interaction, 0, `${emojis.error} ${error.message}`, null);
-        }
+      if (queue) return queue.delete();
+      queueEmbedManager.refreshEmbed();
+      interaction.followUp({
+        embeds: [await createEmbed.embed(message)],
+        ephemeral: true,
+      });
+    } catch (error) {
+      console.error(error);
+      queueEmbedManager.handleError(error);
     }
-}
+  },
+};

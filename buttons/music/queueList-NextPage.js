@@ -1,17 +1,16 @@
-const { RefreshEmbed } = require("../../functions/music/RefreshTheEmbed");
-const emojis = require("../../utils/emojis.json");
+const QueueEmbedManager = require("../../functions/music/queueListEmbed");
 
 module.exports = {
-    name: 'queuelistembed-nextpage',
-    permissions: [],
-    async run(client, interaction) {
-        try {
-
-            RefreshEmbed(interaction, +1, `${emojis.loading} Refreshing...`, null);
-
-        } catch (error) {
-            console.error(error);
-            RefreshEmbed(interaction, 0, `${emojis.error} ${error.message}`, null);
-        }
+  name: "queuelistembed-nextpage",
+  permissions: [],
+  async run(client, interaction) {
+    const queueEmbedManager = new QueueEmbedManager(interaction);
+    try {
+      queueEmbedManager.setIncrementation(1);
+      queueEmbedManager.refreshEmbed();
+    } catch (error) {
+      console.error(error);
+      queueEmbedManager.refreshEmbed();
     }
-}
+  },
+};

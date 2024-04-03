@@ -1,42 +1,43 @@
-const { EmbedBuilder, Colors } = require('discord.js');
+const { EmbedBuilder, Colors } = require("discord.js");
 const { useQueue } = require("discord-player");
 const emojis = require("../../utils/emojis.json");
-const { QueueErrorCheck } = require("../../functions/music/queueListEmbed");
-const { RefreshEmbed } = require("../../functions/music/RefreshTheEmbed");
+const QueueEmbedManager = require("../../functions/music/queueListEmbed");
+const { createEmbed } = require("../../functions/all/Embeds");
 
 module.exports = {
-    name: 'queuelistembed-back',
-    permissions: [],
-    async run(client, interaction) {
-        try {
-            const queue = useQueue(interaction.guild.id);
-            QueueErrorCheck(interaction, !queue);
+  name: "queuelistembed-back",
+  permissions: [],
+  async run(client, interaction) {
+    const queueEmbedManager = new QueueEmbedManager(interaction);
+    await interaction.deferUpdate();
+    try {
+      const queue = useQueue(interaction.guild.id);
+      if (!queue) return;
 
-            const EmbedToUpdate = interaction.message.embeds[0];
-            const { thumbnail, title, footer } = EmbedToUpdate;
+      queue.setRepeatMode(4);
 
-            await RefreshEmbed(interaction, 0, `${emojis["music-back"]} Going back...`, null);
-            await new Promise(resolve => setTimeout(resolve, 2000));
+      let embed;
 
-            queue.setRepeatMode(4);
-            
-            await queue.history.back().catch(async (e) => {
-                const embed = new EmbedBuilder()
-                    .setThumbnail(thumbnail.url)
-                    .setTitle(title)
-                    .setDescription(`${emojis.error} \`${e.message}\``)
-                    .setFooter({ text: footer.text })
-                    .setColor(Colors.Red);
+      await queue.history
+        .back()
+        .then(async () => {
+          embed = await createEmbed.embed(`${emojis.success} Queue going back`);
+        })
+        .catch(async () => {
+          embed = await createEmbed.embed(
+            `${emojis.error} No previous track!`,
+            Colors.Red
+          );
+        });
+      await interaction.followUp({
+        embeds: [embed],
+        ephemeral: true,
+      });
 
-                await interaction.message.edit({ embeds: [embed] });
-                
-                await new Promise(resolve => setTimeout(resolve, 2000));
-                
-                await RefreshEmbed(interaction, 0, `${emojis.loading} Refreshing...`, null);
-            });
-        } catch (error) {
-            console.error(error);
-            RefreshEmbed(interaction, 0, `${emojis.error} ${error.message}`, null);
-        }
+      queueEmbedManager.refreshEmbed();
+    } catch (error) {
+      console.error(error);
+      queueEmbedManager.handleError(error.message);
     }
-}
+  },
+};

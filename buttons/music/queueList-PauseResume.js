@@ -1,29 +1,35 @@
 const { useQueue } = require("discord-player");
+const QueueEmbedManager = require("../../functions/music/queueListEmbed");
 const emojis = require("../../utils/emojis.json");
-const { QueueErrorCheck } = require("../../functions/music/queueListEmbed");
-const { RefreshEmbed } = require("../../functions/music/RefreshTheEmbed");
+const { createEmbed } = require("../../functions/all/Embeds");
 
 module.exports = {
-    name: 'queuelistembed-pauseresume',
-    permissions: [],
-    async run(client, interaction) {
-        try {
-            const queue = useQueue(interaction.guild.id);
-            QueueErrorCheck(interaction, !queue);
+  name: "queuelistembed-pauseresume",
+  permissions: [],
+  async run(client, interaction) {
+    const queueEmbedManager = new QueueEmbedManager(interaction);
+    await interaction.deferUpdate();
+    try {
+      const queue = useQueue(interaction.guild.id);
+      if (!queue) return;
 
-            let message;
-            if (queue.node.isPlaying()) {
-                queue.node.pause();
-                message = `${emojis.loading} Music has been paused`;
-            } else {
-                queue.node.resume();
-                message = `${emojis.loading} Music has been resumed`;
-            }
+      let message;
+      if (queue.node.isPlaying()) {
+        queue.node.pause();
+        message = `${emojis.success} Music has been paused`;
+      } else {
+        queue.node.resume();
+        message = `${emojis.success} Music has been resumed`;
+      }
 
-            RefreshEmbed(interaction, 0, message, null);
-        } catch (error) {
-            console.error(error);
-            RefreshEmbed(interaction, 0, `${emojis.error} ${error.message}`, null);
-        }
+      queueEmbedManager.refreshEmbed();
+      interaction.followUp({
+        embeds: [await createEmbed.embed(message)],
+        ephemeral: true,
+      });
+    } catch (error) {
+      console.error(error);
+      queueEmbedManager.handleError(error);
     }
-}
+  },
+};

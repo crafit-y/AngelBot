@@ -1,4 +1,4 @@
-const { ApplicationCommandOptionType, Colors } = require("discord.js");
+const { ApplicationCommandOptionType, Colors, PermissionFlagsBits } = require("discord.js");
 const { createEmbed } = require("../../functions/all/Embeds");
 const emojis = require("../../utils/emojis.json");
 
@@ -56,7 +56,7 @@ module.exports = {
   name: 'role',
   OwnerOnly: false,
   description: 'Add or remove a role to all members of the server',
-  permissions: ["MANAGE_ROLES"],
+  permissions: [PermissionFlagsBits.ManageRoles],
   options: [
     {
       name: 'all',

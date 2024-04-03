@@ -1,25 +1,36 @@
-const { EmbedBuilder, Colors, ActionRowBuilder, StringSelectMenuBuilder, StringSelectMenuOptionBuilder, InteractionType } = require('discord.js');
+const {
+  EmbedBuilder,
+  Colors,
+  ActionRowBuilder,
+  StringSelectMenuBuilder,
+  StringSelectMenuOptionBuilder,
+  InteractionType,
+} = require("discord.js");
 const emojis = require("../../utils/emojis.json");
 const { useQueue } = require("discord-player");
-const { QueueErrorCheck, InitializeQueueListEmbed } = require("../../functions/music/queueListEmbed");
-const { RefreshEmbed } = require("../../functions/music/RefreshTheEmbed");
+const QueueEmbedManager = require("../../functions/music/queueListEmbed");
+const { createEmbed } = require("../../functions/all/Embeds");
 
 module.exports = {
-  name: 'queuelistembed-shuffle',
+  name: "queuelistembed-shuffle",
   permissions: [],
   async run(client, interaction) {
+    const queueEmbedManager = new QueueEmbedManager(interaction);
+    await interaction.deferUpdate();
     try {
       const queue = useQueue(interaction.guild.id);
-      QueueErrorCheck(interaction, !queue);
-    
+      if (!queue) return;
+
       queue.shuffle();
 
-      RefreshEmbed(interaction, 0, `${emojis["music-shuffle"]} Shuffling...`, null);
-    
+      queueEmbedManager.refreshEmbed();
+      interaction.followUp({
+        embeds: [await createEmbed.embed(`${emojis.success} Queue shuffled`)],
+        ephemeral: true,
+      });
     } catch (error) {
       console.error(error);
-
-      RefreshEmbed(interaction, 0, `${emojis.error} ${error.message}`, null);
+      queueEmbedManager.handleError(error);
     }
-  }
-}
+  },
+};

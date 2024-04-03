@@ -1,5 +1,6 @@
 const { Client, Collection } = require("discord.js");
 const { Player } = require("discord-player");
+const mongoose = require("mongoose");
 const dotenv = require("dotenv");
 dotenv.config();
 const Logger = require("./utils/Logger");
@@ -7,24 +8,13 @@ const Logger = require("./utils/Logger");
 const client = new Client({ intents: 3276799 });
 const player = new Player(client);
 
-const mysql = require("mysql");
-
-let db = mysql.createConnection({
-  host: process.env.DB_HOST,
-  user: process.env.DB_USER,
-  password: process.env.DB_PASSWORD,
-  database: process.env.DB_NAME,
-  port: process.env.DB_PORT,
-});
-
-client.db = db;
-
 client.player = player;
 player.extractors.loadDefault();
 
 ["buttons", "commands", "modals", "selectMenus"].forEach(
   (x) => (client[x] = new Collection())
 );
+
 [
   "CommandHandler",
   "EventHandler",
@@ -48,8 +38,13 @@ process.on("unhandledRejection", (reason, promise) => {
 
 process.on("warning", (...args) => Logger.warn(...args));
 
-client.db.connect(function () {
-  Logger.client("-> Bot was now connected to DB !");
-}); //.catch(err => Logger.error(err))
+(async () => {
+  mongoose
+    .connect(process.env.MONGODB_URI)
+    .then(() => {
+      Logger.client("-> Connected to MongoDB");
+    })
+    .catch((error) => console.error(error));
 
-client.login(process.env.TOKEN);
+  client.login(process.env.TOKEN);
+})();

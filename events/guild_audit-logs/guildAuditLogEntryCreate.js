@@ -34,7 +34,7 @@ module.exports = {
       const embed = new EmbedBuilder()
         .setColor(Colors.Purple)
         .setDescription(`${message}${extra ? `\n${extra}` : ""}`)
-        .setAuthor({ name: author, iconURL: executor.displayAvatarURL() })
+        .setAuthor({ name: author, iconURL: target.displayAvatarURL() })
         .setFooter({ text: `${guild.name}`, iconURL: guild.iconURL() })
         .setTimestamp();
 

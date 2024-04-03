@@ -1,4 +1,4 @@
-const { commandError } = require("../../functions/errors/commandError");
+const { interactionError } = require("../../functions/errors/interactionError");
 
 
 module.exports = {
@@ -64,7 +64,7 @@ module.exports = {
       }
     } catch (error) {
 
-      commandError.send(client, interaction, error);
+      interactionError.send(client, interaction, error);
 
     }
   }
