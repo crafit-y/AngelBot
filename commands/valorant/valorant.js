@@ -300,7 +300,7 @@ async function displayLinkedAccount(interaction, user, accounts) {
   await interaction.editReply({ embeds: [embed] });
 }
 
-async function createAccountEmbed(valorantData) {
+async function createAccountEmbed(valorantData, matchsMmrData) {
   const puuid = valorantData.puuid;
   let userMmr = await valorantAPI.getMMRByPUUID({
     version: "v2",
@@ -331,10 +331,6 @@ async function createAccountEmbed(valorantData) {
     valorantData.card?.wide ||
     "https://static.wikia.nocookie.net/valorant/images/f/f3/Code_Red_Card_Wide.png/revision/latest?cb=20230711192605";
 
-  const RRchange = `\`\`\`ansi\n${
-    mmrChange >= 0 ? `\u001b[32m+` : `\u001b[31m`
-  }${mmrChange}RR\`\`\``;
-
   const HRStr = `${rankEmoji} ${
     highestRank?.patched_tier
   }\n\`\`\`ansi\n\u001b[33m${
@@ -342,8 +338,14 @@ async function createAccountEmbed(valorantData) {
       ? highestRank?.season
           .replaceAll("e", "Episode ")
           .replaceAll("a", "\n- Act ")
-      : "Not defined"
+      : "No data"
   }\`\`\``;
+
+  const RRchange = `Map: ${
+    matchsMmrData[0]?.map?.name || "No data"
+  }\nDate: <t:${matchsMmrData[0]?.date_raw || "No data"}:R>\n\`\`\`ansi\n${
+    mmrChange >= 0 ? `\u001b[32m+` : `\u001b[31m`
+  }${mmrChange}RR\`\`\``;
 
   let embed = new EmbedBuilder()
     .setThumbnail(image)
@@ -359,7 +361,7 @@ async function createAccountEmbed(valorantData) {
         inline: true,
       },
       {
-        name: `Last RR change`,
+        name: `Last MRR game`,
         value: RRchange,
         inline: true,
       },
@@ -381,11 +383,7 @@ async function CarrierStringGenerator(matchsMmrData, puuid) {
     await new Promise((resolve) => setTimeout(resolve, 500));
     const match = matchsMmrData[index];
     const matchId = match.match_id;
-    console.log(matchId);
-    let getMatch = await valorantAPI.getMatch({
-      match_id: matchId,
-    });
-    console.log(getMatch);
+    let getMatch = await valorantAPI.getMatch(matchId);
     if (!getMatch || getMatch.status !== 200) {
       getMatch = null;
     }
@@ -395,19 +393,25 @@ async function CarrierStringGenerator(matchsMmrData, puuid) {
 
     let status = null;
 
-    const player = playersData.all_players?.find((p) => p.puuid === puuid);
+    const player = playersData?.all_players?.find((p) => p.puuid === puuid);
 
     if (player) {
       const playerTeam = player?.team === "Blue" ? "blue" : "red";
       status = (await matchData?.teams[playerTeam]?.has_won) ? "win" : "lost";
     }
-    console.log(status);
 
     const draw = (await red?.has_won) === false && blue?.has_won === false;
 
-    carrierStr.push(
-      status != null ? (status === "win" ? "W" : "L") : draw ? "D" : "?"
-    );
+    status =
+      status != null
+        ? status === "win"
+          ? "win"
+          : "loose"
+        : draw
+        ? "draw"
+        : "undefined";
+
+    carrierStr.push(assets.rounds.status[status]);
   }
   return carrierStr;
 }
@@ -534,7 +538,7 @@ async function viewUserDetails(interaction, playerTag) {
   }
   const matchsMmrData = matchsMmr.data;
 
-  const embed = await createAccountEmbed(valorant);
+  const embed = await createAccountEmbed(valorant, matchsMmrData);
 
   const message = await interaction.editReply({ embeds: [embed] });
 
