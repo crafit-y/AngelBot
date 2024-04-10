@@ -15,6 +15,7 @@ const CensoredLink = {
   async findAndReplace(client, message) {
     try {
       const guild = message.guild;
+      const user = message.author;
 
       let content = message.content;
       if (content.match(linkRegex)) {
@@ -53,7 +54,7 @@ const CensoredLink = {
             [
               (
                 await createEmbed.embed(
-                  `${user} has send a link in ${message.channel}\n> ➔ Link dommain \`${domainOrigin}\``,
+                  `${user} has send a link in ${message.channel}\n> ${emojis.arrow} Link dommain \`${domainOrigin}\``,
                   Colors.Orange
                 )
               )

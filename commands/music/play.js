@@ -52,26 +52,27 @@ module.exports = {
           type: ApplicationCommandOptionType.String,
           required: true,
           choices: [
-            { name: "pause/resume", value: "pause-resume" },
-            { name: "skip", value: "skip" },
-            { name: "back", value: "back" },
-            { name: "loop", value: "loop" },
-            { name: "stop", value: "stop" },
-            { name: "queue-list", value: "queue-list" },
+            {
+              name: `${emojis["music-pause"]} ${emojis.arrow} Pause/Resume`,
+              value: "pause-resume",
+            },
+            { name: `${emojis["music-skip"]} ${emojis.arrow} Skip`, value: "skip" },
+            { name: `${emojis["music-back"]} ${emojis.arrow} Back`, value: "back" },
+            { name: `${emojis["music-loopQueue"]} ${emojis.arrow} Loop`, value: "loop" },
+            { name: `${emojis["music-stop"]} ${emojis.arrow} Stop`, value: "stop" },
+            { name: `${emojis["music-sound-max"]} ${emojis.arrow} Join`, value: "join" },
+            {
+              name: `${emojis["music-sound-muted"]} ${emojis.arrow} Disconnect`,
+              value: "disconnect",
+            },
+            {
+              name: `${emojis["music-queueList"]} ${emojis.arrow} Queue-list`,
+              value: "queue-list",
+            },
           ],
         },
       ],
-    },
-    {
-      name: "join",
-      description: "Join your current voice channel",
-      type: ApplicationCommandOptionType.Subcommand,
-    },
-    {
-      name: "disconnect",
-      description: "Disconnect from the current voice channel",
-      type: ApplicationCommandOptionType.Subcommand,
-    },
+    }
   ],
   run: async (client, interaction) => {
     const action = interaction.options.getSubcommand();
@@ -87,14 +88,6 @@ module.exports = {
       case "options":
         await interaction.deferReply({ ephemeral: choice !== "queue-list" });
         await handleOptionsCommand(client, interaction, queue);
-        break;
-      case "join":
-        await interaction.deferReply({ ephemeral: true });
-        await handleJoinCommand(interaction, channel);
-        break;
-      case "disconnect":
-        await interaction.deferReply({ ephemeral: true });
-        await handleDisconnectCommand(interaction, channel);
         break;
     }
   },
@@ -227,7 +220,7 @@ async function handleOtherLink(client, channel, interaction, link) {
       embed
         .setTitle(`${emojis.success} Sound added to queue !`)
         .setDescription(
-          `[${track.title}](${track.url}) are been added to the Queue !\n> **Artist** ➔ ${track.author}`
+          `[${track.title}](${track.url}) are been added to the Queue !\n> **Artist** ${emojis.arrow} ${track.author}`
         )
         .setThumbnail(track.thumbnail);
     }
@@ -252,6 +245,17 @@ async function handleOtherLink(client, channel, interaction, link) {
 // Function to handle the "options" command
 async function handleOptionsCommand(client, interaction, queue) {
   const choice = interaction.options.getString("selected-option");
+  const channel = interaction.member.voice.channel;
+
+  if (choice === "join" || choice === "disconnect") {
+    switch (choice) {
+      case "join":
+        return await handleJoin(interaction, channel);
+      case "disconnect":
+        return await handleDisconnect(interaction, channel);
+    }
+  }
+
   const queueEmbedManager = new QueueEmbedManager(interaction);
 
   switch (choice) {
@@ -349,7 +353,7 @@ async function handleOptionsCommand(client, interaction, queue) {
 
 // Function to handle the "join" command
 
-async function handleJoinCommand(interaction, channel) {
+async function handleJoin(interaction, channel) {
   if (!channel)
     return await interaction.editReply(
       "You are not connected to a voice channel!"
@@ -374,13 +378,9 @@ async function handleJoinCommand(interaction, channel) {
 
 // Function to handle the "disconnect" command
 
-async function handleDisconnectCommand(interaction, channel) {
+async function handleDisconnect(interaction, channel) {
   const disconnection = getVoiceConnection(interaction.guild.id);
 
-  if (!channel)
-    return await interaction.editReply(
-      "You are not connected to a voice channel!"
-    );
   if (!disconnection)
     return await interaction.editReply("I'm not connected to a voice channel!");
 
