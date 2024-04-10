@@ -18,11 +18,10 @@ module.exports = async client => [
     //     return Logger.typo(`Commande non-chargé: erreur de typo sur la permission de la command ↓\nFichier -> ${commandFile}`);
     //   }
     // });
-    let commandClient;
 
     try {
       
-      commandClient = client.commands.set(command.name, command);
+      client.commands.set(command.name, command);
     
     } catch (error) {
       Logger.warn(`Error -> ${error.message}`);

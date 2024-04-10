@@ -66,7 +66,7 @@ const AntiSpam = {
                 await createEmbed.embed(
                   `${member} has spam in ${
                     message.channel
-                  }\n> ${emojis.arrow} Timed out for \`${sanctionResult.formatTime(
+                  }\n> ➔ Timed out for \`${sanctionResult.formatTime(
                     config.muteTime
                   )}\``,
                   Colors.Purple

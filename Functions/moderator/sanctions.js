@@ -1,7 +1,6 @@
 // Utilisez la déstructuration pour importer seulement ce dont vous avez besoin, réduisant ainsi la charge mémoire.
 const { EmbedBuilder, Colors } = require("discord.js");
 const { error } = require("../../utils/emojis.json");
-const emojis = require("../../utils/emojis.json");
 
 class Sanction {
   constructor(mod, member, sanction, prefix, reason, guild, duration) {
@@ -65,7 +64,7 @@ class Sanction {
         case "timeout":
           await member.timeout(
             duration * 1000,
-            formattedReason + " ${emojis.arrow} Timed-out for " + this.formatTime(duration)
+            formattedReason + " ➔ Timed-out for " + this.formatTime(duration)
           );
           return true;
         case "untimeout":
@@ -77,14 +76,14 @@ class Sanction {
         case "kick":
           if (!member.kickable)
             return `${error} The member ${member} was not kickable with my current permissions!`;
-          await member.kick(`${formattedReason} ${emojis.arrow} Kicked`);
+          await member.kick(`${formattedReason} ➔ Kicked`);
           return true;
         case "ban":
           if (!member.bannable)
             return `${error} The member ${member} was not bannable with my current permissions!`;
           await guild.bans.create(member, {
             deleteMessageDays: 7,
-            reason: `${formattedReason} ${emojis.arrow} Banned for a life`,
+            reason: `${formattedReason} ➔ Banned for a life`,
           });
           return true;
         case "unban":
@@ -123,7 +122,7 @@ class Sanction {
           )
           .setColor(Colors.Purple)
           .setAuthor({
-            name: `Sanction ${emojis.arrow} ${this.formatSanctionString(sanction)
+            name: `Sanction ➔ ${this.formatSanctionString(sanction)
               .replace("ned", "")
               .replace("ed", "")}`,
             iconURL: guild.iconURL(),

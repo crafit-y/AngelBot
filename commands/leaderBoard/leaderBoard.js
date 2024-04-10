@@ -48,12 +48,12 @@ module.exports = {
         const winLossRatio = stats.losses !== 0 ? stats.wins / stats.losses : stats.wins;
         const array = [];
         array.push(`### ℹ️ Informations about ${member}:`);
-        array.push(`*Wins ${emojis.arrow} \`${stats.wins ? stats.wins : "0"}\` | Looses ${emojis.arrow} \`${stats.losses ? stats.losses : "0"}\` | Games played ${emojis.arrow} \`${stats.gamesPlayed ? stats.gamesPlayed : "0"}\`*`)
-        array.push(`*Ratio ${emojis.arrow} \`${winLossRatio.toString().substring(0, 4)}\`*`)
+        array.push(`*Wins ➔ \`${stats.wins ? stats.wins : "0"}\` | Looses ➔ \`${stats.losses ? stats.losses : "0"}\` | Games played ➔ \`${stats.gamesPlayed ? stats.gamesPlayed : "0"}\`*`)
+        array.push(`*Ratio ➔ \`${winLossRatio.toString().substring(0, 4)}\`*`)
         array.push(`### Party:`)
-        array.push(`> Position in leaderboard ${emojis.arrow} \`#${position !== -1 ? position : "<Not found>"}\``)
-        array.push(`> Curently in the team ${emojis.arrow} ${await getTheTeamOfTheUser(member) != null ? `**Team${await getTheTeamOfTheUser(member)}**` : "*Not in any teams*"}`)
-        array.push(`> Curently on live? ${emojis.arrow} ${party && isOnLive && isOnLiveTeam ? "On live 🟢" : "Not on live 🔴"}`)
+        array.push(`> Position in leaderboard ➔ \`#${position !== -1 ? position : "<Not found>"}\``)
+        array.push(`> Curently in the team ➔ ${await getTheTeamOfTheUser(member) != null ? `**Team${await getTheTeamOfTheUser(member)}**` : "*Not in any teams*"}`)
+        array.push(`> Curently on live? ➔ ${party && isOnLive && isOnLiveTeam ? "On live 🟢" : "Not on live 🔴"}`)
 
         interaction.editReply({
           embeds: [(await createEmbed.embed(array.join("\n"), Colors.Yellow))],

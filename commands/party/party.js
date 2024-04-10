@@ -206,7 +206,7 @@ module.exports = {
             }
             await teamManager.updateTeam(`team${team}`, newMembers);
             await interaction.editReply({ embeds: [await createEmbed.embed(`${emojis.success} Team${team} users\nSuccessfully updated!`)] });
-            await Notify(client, logChannel, interaction.member, `### ${emojis.info} | LOGS - Team${team} Users updated\nAdded to team ${emojis.arrow} <@${newMembers.join(">\nAdded to team ${emojis.arrow} <@")}>`);
+            await Notify(client, logChannel, interaction.member, `### ${emojis.info} | LOGS - Team${team} Users updated\nAdded to team ➔ <@${newMembers.join(">\nAdded to team ➔ <@")}>`);
           } catch (error) {
             console.error('Error updating teams:', error);
           }
@@ -234,7 +234,7 @@ module.exports = {
             SayingTeam = "MatchNull";
           }
           const winName = SayingTeam.replaceAll("Win", "").replaceAll("MatchNull", "Match Null");
-          await Notify(client, logChannel, interaction.member, `### ${emojis.info} | LOGS - System\nParty ended!\nWinner ${emojis.arrow} **${winName}**`);
+          await Notify(client, logChannel, interaction.member, `### ${emojis.info} | LOGS - System\nParty ended!\nWinner ➔ **${winName}**`);
           await interaction.editReply({ embeds: [await createEmbed.embed(`${emojis.loading} Party is ending...`, Colors.Gold)] });
           const teamActions = await moveUsersToTeamVoiceChannels(client, [usersTeam1, usersTeam2], [IDS.CHANNELS.END, IDS.CHANNELS.END]);
           await Notify(client, logChannel, interaction.member, teamActions);

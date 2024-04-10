@@ -1,8 +1,8 @@
 {
-  "loading": "<a:load:1225862315073736735>",
-  "success": "<:success:1227147513841320017>",
+  "loading": "<a:killjoyTwerk:1204799979672043600>",
+  "success": "<:sageOk:1204877028579344475>",
   "info": "<:sagePeek:1204795238066036827>",
-  "error": "<:error:1227147516395520091>",
+  "error": "<:sageCry:1204795201290371092>",
   "trash": "<:sageTrash:1204795264217391114>",
   "time": "⏰",
   "crono": "⏱️",
@@ -11,33 +11,19 @@
   "user": "👤",
   "reason": "🖊️",
   "gear": "⚙️",
-  "arrow": "➔",
-
-  "sanction": "<:sanction:1227147521785200690>",
-  "sanction-timeout": "<:timeout:1227147523710255206>",
-
+  
   "leaderboard": "🏆",
+  "teams": "👥",
   "top1": "🥇",
   "top2": "🥈",
   "top3": "🥉",
   "onLive": "🟢",
   "offLive": "🔴",
   "away": "🟠",
-
-  "teams": "<:teams:1227150767824044063>",
-  "member-update": "<:member_update:1227150655806771200>",
-  "member-add": "<:member_add:1227150647028092989>",
-
-  "connection": "<:connection:1227147518333288538>",
-  "connection-failed": "<:connection_failed:1227149451668357151>",
-  "disconnection": "<:disconnection:1227147519952424990>",
-
-  "valorant": "<:valorant:1207107072877920327>",
-
+  
   "music": "<a:among_usRaimbow:1207107123591258183>",
   "music-note": "🎵",
   "music-notes": "🎶",
-  "music-queueList": "🎼",
   "music-loopTrack": "🔂",
   "music-loopQueue": "🔁",
   "music-loopInfinitQueue": "♾️",

@@ -111,7 +111,7 @@ class QueueEmbedManager {
           .replace(new RegExp(currentTrack.author, "gi"), "")
           .replace(Pattern, "")
           .trim()
-          .slice(0, 40)} ${emojis.arrow} Playing on ${this.queue.channel}`
+          .slice(0, 40)} ➔ Playing on ${this.queue.channel}`
       )
       .setDescription(description)
       .setColor(Colors.Purple);

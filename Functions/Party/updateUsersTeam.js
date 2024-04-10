@@ -1,25 +1,11 @@
-const {
-  StringSelectMenuOptionBuilder,
-  StringSelectMenuBuilder,
-  ActionRowBuilder,
-  ButtonBuilder,
-  ButtonStyle,
-} = require("discord.js");
-const { getAllTheTeam } = require("./getAllTheTeam");
-const { createEmbed } = require("../all/Embeds");
-const emojis = require("../../utils/emojis.json");
+const { StringSelectMenuOptionBuilder, StringSelectMenuBuilder, ActionRowBuilder, ButtonBuilder, ButtonStyle } = require('discord.js');
+const { getAllTheTeam } = require('./getAllTheTeam');
+const { createEmbed } = require('../all/Embeds');
+const emojis = require('../../utils/emojis.json');
 
-async function updateUsersTeam(
-  client,
-  interaction,
-  team,
-  replyed = false,
-  updated = 0
-) {
+async function updateUsersTeam(client, interaction, team, replyed = false, updated = 0) {
   const usersInTeam = await getAllTheTeam(team);
-  const userObjects = await Promise.all(
-    usersInTeam.map((userId) => client.users.fetch(userId))
-  );
+  const userObjects = await Promise.all(usersInTeam.map(userId => client.users.fetch(userId)));
 
   const selectMenu = new StringSelectMenuBuilder()
     .setCustomId("selecttheusertoreplace")
@@ -30,7 +16,7 @@ async function updateUsersTeam(
   const options = userObjects.map((user, index) => {
     const userName = user.displayName.substring(0, 30);
     return new StringSelectMenuOptionBuilder()
-      .setLabel(`User ${emojis.arrow} ${userName}`)
+      .setLabel(`User ➔ ${userName}`)
       .setValue(`${index + 1}-${user.id}`);
   });
 
@@ -56,25 +42,24 @@ async function updateUsersTeam(
     .addComponents(team1Button)
     .addComponents(team2Button);
 
-  const rowSelectMenu = new ActionRowBuilder().addComponents(selectMenu);
+  const rowSelectMenu = new ActionRowBuilder()
+    .addComponents(selectMenu);
 
-  const userList = usersInTeam
-    .map((user, index) => {
-      return `<@${user}>${index + 1 === updated ? " *(✏️ updated)*" : ""}`;
-    })
-    .join(`\n> User ${emojis.arrow}`);
+  const userList = usersInTeam.map((user, index) => {
+    return `<@${user}>${index + 1 === updated ? ' *(✏️ updated)*' : ''}`;
+  }).join('\n> User ➔');
 
-  const embedContent = `### ${emojis.teams} The list of participants in Team ${team}\n> User ${emojis.arrow}${userList}`;
+  const embedContent = `### ${emojis.teams} The list of participants in Team ${team}\n> User ➔ ${userList}`;
 
   if (replyed) {
     await interaction.message.edit({
       embeds: [await createEmbed.embed(embedContent)],
-      components: [rowButtons, rowSelectMenu],
+      components: [rowButtons, rowSelectMenu]
     });
   } else {
     await interaction.editReply({
       embeds: [await createEmbed.embed(embedContent)],
-      components: [rowButtons, rowSelectMenu],
+      components: [rowButtons, rowSelectMenu]
     });
   }
 }
