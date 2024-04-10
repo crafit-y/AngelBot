@@ -22,12 +22,6 @@
       "detonated": "<:blue_detonated:1226992992057954397>",
       "defused": "<:blue_defused:1226992993559642202>",
       "surrendered": "<:blue_surrendered:1226992988761227444>"
-    },
-    "status": {
-      "win": "<:win:1227633975577542656>",
-      "loose": "<:loose:1227633966467776552>",
-      "draw": "<:draw:1227634065226600459>",
-      "undefined": "<:undefined:1227635708861222943>"
     }
   },
 
