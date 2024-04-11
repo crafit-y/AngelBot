@@ -1,12 +1,14 @@
-const { Colors } = require('discord.js');
-const { createEmbed } = require('../all/Embeds.js');
-const emojis = require('../../utils/emojis.json');
-const IDS = require('../../utils/ids.json');
-const { getTheTeamOfTheUser } = require('../../functions/party/getTheTeamOfTheUser.js');
-const { partyManager } = require('../fs/PartyManager.js');
-const { liveManager } = require('../fs/LiveManager.js');
-const { PlayASound } = require('../all/PlayASound.js');
-const { Webhook } = require('../all/WebHooks.js');
+const { Colors } = require("discord.js");
+const { createEmbed } = require("../all/Embeds.js");
+const emojis = require("../../utils/emojis.json");
+const IDS = require("../../utils/ids.json");
+const {
+  getTheTeamOfTheUser,
+} = require("../../functions/party/getTheTeamOfTheUser.js");
+const { partyManager } = require("../fs/PartyManager.js");
+const { liveManager } = require("../fs/LiveManager.js");
+const { PlayASound } = require("../all/PlayASound.js");
+const { Webhook } = require("../all/WebHooks.js");
 
 async function handleUserStatus(client, member, action) {
   try {
@@ -23,26 +25,83 @@ async function handleUserStatus(client, member, action) {
         channel = guild.channels.cache.get(IDS.CHANNELS.TEAM1);
       } else if (memberTeam === "2") {
         channel = guild.channels.cache.get(IDS.CHANNELS.TEAM2);
-      } else if (memberTeam === "0" && action === 'reconnect') {
-        await Webhook.send(logChannel, "Party", client.user.displayAvatarURL(), null, [await createEmbed.log(client, `### ${emojis.info} | LOGS - Systeme\n> User cannot be moved because the team is not clearly defined > ${member}`, Colors.Red)])
-        await new Promise(resolve => setTimeout(resolve, 3000)).catch(O_o => { console.log(O_o) });
-        await PlayASound.anExistingFile(client).catch(err => { console.log(err) });
+      } else if (memberTeam === "0" && action === "reconnect") {
+        await Webhook.send(
+          logChannel,
+          "Party",
+          client.user.displayAvatarURL(),
+          null,
+          [
+            await createEmbed.log(
+              client,
+              `### ${emojis.info} | LOGS - Systeme\n> ${emojis.error} User cannot be moved because the team is not clearly defined ${emojis.arrow} ${member}`,
+              Colors.Red
+            ),
+          ]
+        );
+        await new Promise((resolve) => setTimeout(resolve, 3000)).catch(
+          (O_o) => {
+            console.log(O_o);
+          }
+        );
+        await PlayASound.anExistingFile(client).catch((err) => {
+          console.log(err);
+        });
       }
-      if (channel && action === 'reconnect') {
+      if (channel && action === "reconnect") {
         await member.voice.setChannel(channel);
-        await Webhook.send(logChannel, "Party", client.user.displayAvatarURL(), null, [await createEmbed.log(client, `### ${emojis.info} | LOGS - Systeme\n> User moved due to reconnection ➔ ${member}\n> Channel ➔ ${channel}`)])
-        await new Promise(resolve => setTimeout(resolve, 3000)).catch(O_o => { console.log(O_o) });
-        await PlayASound.anExistingFile(client, "MoveAfterReconnection").catch(err => { console.log(err) });
-      } else if (channel && action === 'disconnect') {
-
-        await Webhook.send(logChannel, "Party", client.user.displayAvatarURL(), null, [await createEmbed.log(client, `### ${emojis.info} | LOGS - Systeme\n> User left on party ➔ ${member}\n> Team ➔ **Team${memberTeam}**`)])
-        await new Promise(resolve => setTimeout(resolve, 3000)).catch(O_o => { console.log(O_o) });
-        await PlayASound.anExistingFile(client, "UserDisconnection").catch(err => { console.log(err) });
+        await Webhook.send(
+          logChannel,
+          "Party",
+          client.user.displayAvatarURL(),
+          null,
+          [
+            await createEmbed.log(
+              client,
+              `### ${emojis.info} | LOGS - Systeme\n>${emojis["connection"]} User moved due to reconnection ${emojis.arrow} ${member}\n> Channel ${emojis.arrow} ${channel}`
+            ),
+          ]
+        );
+        await new Promise((resolve) => setTimeout(resolve, 3000)).catch(
+          (O_o) => {
+            console.log(O_o);
+          }
+        );
+        await PlayASound.anExistingFile(client, "MoveAfterReconnection").catch(
+          (err) => {
+            console.log(err);
+          }
+        );
+      } else if (channel && action === "disconnect") {
+        await Webhook.send(
+          logChannel,
+          "Party",
+          client.user.displayAvatarURL(),
+          null,
+          [
+            await createEmbed.log(
+              client,
+              `### ${emojis.info} | LOGS - Systeme\n> ${emojis["connection-failed"]} User left on party ${emojis.arrow} ${member}\n> Team ${emojis.arrow} **Team${memberTeam}**`
+            ),
+          ]
+        );
+        await new Promise((resolve) => setTimeout(resolve, 3000)).catch(
+          (O_o) => {
+            console.log(O_o);
+          }
+        );
+        await PlayASound.anExistingFile(client, "UserDisconnection").catch(
+          (err) => {
+            console.log(err);
+          }
+        );
       }
     }
   } catch (error) {
-    console.error('Error handling user status:', error);
-    await PlayASound.anExistingFile(client).catch(err => { console.log(err) });
+    console.error("Error handling user status:", error);
+    await PlayASound.anExistingFile(client).catch((err) => {
+      console.log(err);
+    });
   }
 }
 

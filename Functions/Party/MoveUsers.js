@@ -15,9 +15,9 @@ async function moveUsersToTheVoiceChannel(client, users, channelId, team) {
 
       if (member instanceof GuildMember && member.voice.channel && userId !== IDS.OTHER_IDS.BOT) {
         await member.voice.setChannel(channel);
-        actions.push(`\n> ${emojis['music-sound-max']} - User moved ➔ ${member}`);
+        actions.push(`\n> ${emojis.connection} - User moved ${emojis.arrow} ${member}`);
       } else {
-        actions.push(`\n> ${emojis['music-sound-muted']} - User not connected on a voice channel ➔ ${member}`);
+        actions.push(`\n> ${emojis['connection-failed']} - User not connected on a voice channel ${emojis.arrow} ${member}`);
       }
     }
 

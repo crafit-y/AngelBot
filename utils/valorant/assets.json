@@ -1,0 +1,339 @@
+{
+  "teams": {
+    "red": {
+      "emoji": "🔴"
+    },
+    "blue": {
+      "emoji": "🔵"
+    }
+  },
+
+  "rounds": {
+    "red": {
+      "time": "<:red_time:1226992967927988347>",
+      "eliminated": "<:red_eliminated:1226992966904713366>",
+      "detonated": "<:red_detonated:1226992969849110629>",
+      "defused": "<:red_defused:1226992971845734584>",
+      "surrendered": "<:red_surrendered:1226992964992241704>"
+    },
+    "blue": {
+      "time": "<:blue_time:1226992990405525544>",
+      "eliminated": "<:blue_eliminated:1226992995208007680>",
+      "detonated": "<:blue_detonated:1226992992057954397>",
+      "defused": "<:blue_defused:1226992993559642202>",
+      "surrendered": "<:blue_surrendered:1226992988761227444>"
+    },
+    "status": {
+      "win": "<:win:1227633975577542656>",
+      "loose": "<:loose:1227633966467776552>",
+      "draw": "<:draw:1227634065226600459>",
+      "undefined": "<:undefined:1227635708861222943>"
+    }
+  },
+
+  "maps": {
+    "Bind": {
+      "img": "/utils/valorant/assets/banners/BIND/1.png",
+      "name": "/utils/valorant/assets/banners/BIND/2.png",
+      "imgWon": "/utils/valorant/assets/banners/BIND/3.png",
+      "imgLost": "/utils/valorant/assets/banners/BIND/4.png",
+      "imgDraw": "/utils/valorant/assets/banners/BIND/5.png"
+    },
+    "Split": {
+      "img": "/utils/valorant/assets/banners/SPLIT/1.png",
+      "name": "/utils/valorant/assets/banners/SPLIT/2.png",
+      "imgWon": "/utils/valorant/assets/banners/SPLIT/3.png",
+      "imgLost": "/utils/valorant/assets/banners/SPLIT/4.png",
+      "imgDraw": "/utils/valorant/assets/banners/SPLIT/5.png"
+    },
+    "Haven": {
+      "img": "/utils/valorant/assets/banners/HAVEN/1.png",
+      "name": "/utils/valorant/assets/banners/HAVEN/2.png",
+      "imgWon": "/utils/valorant/assets/banners/HAVEN/3.png",
+      "imgLost": "/utils/valorant/assets/banners/HAVEN/4.png",
+      "imgDraw": "/utils/valorant/assets/banners/HAVEN/5.png"
+    },
+    "Ascent": {
+      "img": "/utils/valorant/assets/banners/ASCENT/1.png",
+      "name": "/utils/valorant/assets/banners/ASCENT/2.png",
+      "imgWon": "/utils/valorant/assets/banners/ASCENT/3.png",
+      "imgLost": "/utils/valorant/assets/banners/ASCENT/4.png",
+      "imgDraw": "/utils/valorant/assets/banners/ASCENT/5.png"
+    },
+    "Icebox": {
+      "img": "/utils/valorant/assets/banners/ICEBOX/1.png",
+      "name": "/utils/valorant/assets/banners/ICEBOX/2.png",
+      "imgWon": "/utils/valorant/assets/banners/ICEBOX/3.png",
+      "imgLost": "/utils/valorant/assets/banners/ICEBOX/4.png",
+      "imgDraw": "/utils/valorant/assets/banners/ICEBOX/5.png"
+    },
+    "Breeze": {
+      "img": "/utils/valorant/assets/banners/BREEZE/1.png",
+      "name": "/utils/valorant/assets/banners/BREEZE/2.png",
+      "imgWon": "/utils/valorant/assets/banners/BREEZE/3.png",
+      "imgLost": "/utils/valorant/assets/banners/BREEZE/4.png",
+      "imgDraw": "/utils/valorant/assets/banners/BREEZE/5.png"
+    },
+    "Fracture": {
+      "img": "/utils/valorant/assets/banners/FRACTURE/1.png",
+      "name": "/utils/valorant/assets/banners/FRACTURE/2.png",
+      "imgWon": "/utils/valorant/assets/banners/FRACTURE/3.png",
+      "imgLost": "/utils/valorant/assets/banners/FRACTURE/4.png",
+      "imgDraw": "/utils/valorant/assets/banners/FRACTURE/5.png"
+    },
+    "Lotus": {
+      "img": "/utils/valorant/assets/banners/LOTUS/1.png",
+      "name": "/utils/valorant/assets/banners/LOTUS/2.png",
+      "imgWon": "/utils/valorant/assets/banners/LOTUS/3.png",
+      "imgLost": "/utils/valorant/assets/banners/LOTUS/4.png",
+      "imgDraw": "/utils/valorant/assets/banners/LOTUS/5.png"
+    },
+    "Pearl": {
+      "img": "/utils/valorant/assets/banners/PEARL/1.png",
+      "name": "/utils/valorant/assets/banners/PEARL/2.png",
+      "imgWon": "/utils/valorant/assets/banners/PEARL/3.png",
+      "imgLost": "/utils/valorant/assets/banners/PEARL/4.png",
+      "imgDraw": "/utils/valorant/assets/banners/PEARL/5.png"
+    },
+    "Sunset": {
+      "img": "/utils/valorant/assets/banners/SUNSET/1.png",
+      "name": "/utils/valorant/assets/banners/SUNSET/2.png",
+      "imgWon": "/utils/valorant/assets/banners/SUNSET/3.png",
+      "imgLost": "/utils/valorant/assets/banners/SUNSET/4.png",
+      "imgDraw": "/utils/valorant/assets/banners/SUNSET/5.png"
+    },
+    "Unknown": {
+      "name": "Unknown",
+      "imgWon": "https://cdn.discordapp.com/attachments/834195818080108564/924407916973395968/victory.jpg",
+      "imgLost": "https://cdn.discordapp.com/attachments/834195818080108564/924407917233463386/defeat.jpg",
+      "imgDraw": "https://cdn.discordapp.com/attachments/834195818080108564/924407916730150932/draw.jpg",
+      "img": "https://cdn.discordapp.com/attachments/834195818080108564/924408585671295016/unknown.jpg"
+    }
+  },
+
+  "agentEmojis": {
+    "Astra": {
+      "emoji": "<:astra:1226992363205820516>"
+    },
+    "Breach": {
+      "emoji": "<:breach:1226992374409068705>"
+    },
+    "Brimstone": {
+      "emoji": "<:brimstone:1226992355840757891>"
+    },
+    "Cypher": {
+      "emoji": "<:cypher:1226992408156176454>"
+    },
+    "Jett": {
+      "emoji": "<:jett:1226992388598403196>"
+    },
+    "Killjoy": {
+      "emoji": "<:killjoy:1226992376602427462>"
+    },
+    "Omen": {
+      "emoji": "<:omen:1226992358688821362>"
+    },
+    "Phoenix": {
+      "emoji": "<:phoenix:1226992393669312612>"
+    },
+    "Raze": {
+      "emoji": "<:raze:1226992611974320220>"
+    },
+    "Reyna": {
+      "emoji": "<:reyna:1226992381254045917>"
+    },
+    "Sage": {
+      "emoji": "<:sage:1226992378750042342>"
+    },
+    "Skye": {
+      "emoji": "<:skye:1226992392020824084>"
+    },
+    "Sova": {
+      "emoji": "<:sova:1226992368788570193>"
+    },
+    "Viper": {
+      "emoji": "<:viper:1226992361184301186>"
+    },
+    "Yoru": {
+      "emoji": "<:yoru:1226992353047482499>"
+    },
+    "KAY/O": {
+      "emoji": "<:kayo:1226992614012883056>"
+    },
+    "Chamber": {
+      "emoji": "<:chamber:1226992383217111142>"
+    },
+    "Neon": {
+      "emoji": "<:neon:1226992395615207606>"
+    },
+    "Fade": {
+      "emoji": "<:fade:1226992385876295964>"
+    },
+    "Harbor": {
+      "emoji": "<:harbor:1226992366158741586>"
+    },
+    "Gekko": {
+      "emoji": "<:gekko:1226992370558570587>"
+    },
+    "Deadlock": {
+      "emoji": "<:deadlock:1226992399805317224>"
+    },
+    "Iso": {
+      "emoji": "<:iso:1226992403924259087>"
+    },
+    "Clove": {
+      "emoji": "<:clove:1226992615556382811>"
+    }
+  },
+
+  "ranks": {
+    "Iron": {
+      "1": {
+        "emoji": "<:valorant_iron1:1227378696810266684>"
+      },
+      "2": {
+        "emoji": "<:valorant_iron2:1227378878180229283>"
+      },
+      "3": {
+        "emoji": "<:valorant_iron3:1227378728292712480>"
+      }
+    },
+    "Bronze": {
+      "1": {
+        "emoji": "<:valorant_bronze1:1227378699410604132>"
+      },
+      "2": {
+        "emoji": "<:valorant_bronze2:1227378700564299877>"
+      },
+      "3": {
+        "emoji": "<:valorant_bronze3:1227378703579742333>"
+      }
+    },
+    "Silver": {
+      "1": {
+        "emoji": "<:valorant_silver1:1227378876616015955>"
+      },
+      "2": {
+        "emoji": "<:valorant_silver2:1227378720889896982>"
+      },
+      "3": {
+        "emoji": "<:valorant_silver3:1227378695354712134>"
+      }
+    },
+    "Gold": {
+      "1": {
+        "emoji": "<:valorant_gold1:1227378884786257951>"
+      },
+      "2": {
+        "emoji": "<:valorant_gold2:1227378881909096458>"
+      },
+      "3": {
+        "emoji": "<:valorant_gold3:1227378737776033904>"
+      }
+    },
+    "Platinum": {
+      "1": {
+        "emoji": "<:valorant_platinum1:1227378705962106962>"
+      },
+      "2": {
+        "emoji": "<:valorant_platinum2:1227378883440021555>"
+      },
+      "3": {
+        "emoji": "<:valorant_platinum3:1227378710009872504>"
+      }
+    },
+    "Diamond": {
+      "1": {
+        "emoji": "<:valorant_diamond1:1227378704850747533>"
+      },
+      "2": {
+        "emoji": "<:valorant_diamond2:1227378698248912996>"
+      },
+      "3": {
+        "emoji": "<:valorant_diamond3:1227378717072949290>"
+      }
+    },
+    "Ascendant": {
+      "1": {
+        "emoji": "<:valorant_ascendant1:1227378701650497619>"
+      },
+      "2": {
+        "emoji": "<:valorant_ascendant2:1227378879447175178>"
+      },
+      "3": {
+        "emoji": "<:valorant_ascendant3:1227378731568336966>"
+      }
+    },
+    "Immortal": {
+      "1": {
+        "emoji": "<:valorant_immortal1:1227378724337619018>"
+      },
+      "2": {
+        "emoji": "<:valorant_immortal2:1227378880239894549>"
+      },
+      "3": {
+        "emoji": "<:valorant_immortal3:1227378875080773653>"
+      }
+    },
+    "Radiant": {
+      "1": {
+        "emoji": "<:valorant_radiant:1227378713499406340>"
+      }
+    },
+    "Unrated": {
+      "1": {
+        "emoji": "<:valorant_unrated:1227729599753093130>"
+      }
+    },
+    "Mvp": {
+      "emoji": "<:star:1227744591650881649>"
+    }
+  },
+
+  "modeEmojis": {
+    "Competitive": {
+      "emoji": "<:normal:840652327160381460>"
+    },
+    "Unrated": {
+      "emoji": "<:normal:840652327160381460>"
+    },
+    "Spike Rush": {
+      "emoji": "<:spikerush:840652327447035934>"
+    },
+    "Deathmatch": {
+      "emoji": "<:deathmatch:840652327231946803>"
+    },
+    "Escalation": {
+      "emoji": "<:escalation:840652327139540993>"
+    }
+  },
+  "mapEmojis": {
+    "Ascent": {
+      "emoji": "<:ascent:854916943194619934>"
+    },
+    "Bind": {
+      "emoji": "<:bind:854916975276195861>"
+    },
+    "Breeze": {
+      "emoji": "<:breeze:854916976405119027>"
+    },
+    "Haven": {
+      "emoji": "<:haven:854916978329780265>"
+    },
+    "Icebox": {
+      "emoji": "<:icebox:854916979852443679>"
+    },
+    "Split": {
+      "emoji": "<:split:854916978640945162>"
+    },
+    "Fracture": {
+      "emoji": "<:fracture:956290115511148565>"
+    },
+    "Pearl": {
+      "emoji": "<:pearl:1145847954859630696>"
+    },
+    "Lotus": {
+      "emoji": "<:lotusmap:1145847957065842719>"
+    }
+  }
+}

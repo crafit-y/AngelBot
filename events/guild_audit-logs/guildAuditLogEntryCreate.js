@@ -27,7 +27,7 @@ module.exports = {
       const guild = client.guilds.cache.get(IDS.OTHER_IDS.GUILD);
       const logChannel = guild.channels.cache.get(IDS.CHANNELS.LOG);
 
-      const author = `${name} ➔ ${target.displayName} (@${target.username})`;
+      const author = `${name} ${emojis.arrow} ${target.displayName} (@${target.username})`;
       const message = `${target} ${description}`;
 
 

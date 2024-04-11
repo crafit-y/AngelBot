@@ -1,34 +1,27 @@
 const {
+  EmbedBuilder,
   ApplicationCommandOptionType,
   PermissionFlagsBits,
   Colors,
 } = require("discord.js");
-const emojis = require("../../utils/emojis.json");
+const assets = require("../../utils/valorant/assets.json");
+
 const { createEmbed } = require("../../functions/all/Embeds");
 const ValorantAccount = require("../../schemas/AccountSchema");
+const ValorantAPIClient = require("../../functions/api/valorant-api");
+const valorantAPI = new ValorantAPIClient("");
+const MatchEmbed = require("../../functions/valorant/MatchEmbed");
+const emojis = require("../../utils/emojis.json");
+const Valorant = require("../../functions/valorant/Valorant");
 
 const PERMISSION_ERROR_MESSAGE = `${emojis.error} You don't have permission to perform this action!`;
+const commandId = `</valorant link:${process.env.VALORANT_COMMAND_ID}>`;
+const commandViewMatch = `</valorant view-match:${process.env.VALORANT_COMMAND_ID}>`;
 
-const checkPermissions = (interaction, user) => {
-  return (
-    user === interaction.user ||
-    interaction.member.permissions.has(PermissionFlagsBits.Administrator)
-  );
-};
-
-const validateValorantTag = (interaction, playerID) => {
-  if (!playerID.includes("#")) {
-    interaction.editReply(
-      "You have entered an invalid Valorant username and tag!"
-    );
-    return false;
-  }
-  return true;
-};
-
+// Command execution
 module.exports = {
   name: "valorant",
-  description: "Link a VALORANT account to your Discord ID",
+  description: "Manage your VALORANT account linkage",
   permissions: [],
   options: [
     {
@@ -51,14 +44,20 @@ module.exports = {
       ],
     },
     {
-      name: "linked",
-      description: "Show your linked VALORANT account",
+      name: "my-account",
+      description: "Show your VALORANT account",
       type: ApplicationCommandOptionType.Subcommand,
       options: [
         {
           name: "member",
-          description: "The member to check (mod only)",
+          description: "The member",
           type: ApplicationCommandOptionType.User,
+          required: false,
+        },
+        {
+          name: "valorant-tag",
+          description: "Your VALORANT username with tag",
+          type: ApplicationCommandOptionType.String,
           required: false,
         },
       ],
@@ -76,99 +75,290 @@ module.exports = {
         },
       ],
     },
+    {
+      name: "last-match",
+      description: "Unlink your VALORANT account",
+      type: ApplicationCommandOptionType.Subcommand,
+      options: [
+        {
+          name: "member",
+          description: "The member",
+          type: ApplicationCommandOptionType.User,
+          required: false,
+        },
+        {
+          name: "valorant-tag",
+          description: "Your VALORANT username with tag",
+          type: ApplicationCommandOptionType.String,
+          required: false,
+        },
+      ],
+    },
+    {
+      name: "view-match",
+      description: "Unlink your VALORANT account",
+      type: ApplicationCommandOptionType.Subcommand,
+      options: [
+        {
+          name: "match_id",
+          description: "Force un-link the member (mod only)",
+          type: ApplicationCommandOptionType.String,
+          required: true,
+        },
+      ],
+    },
+    {
+      name: "view-carrier",
+      description: "See 10 last matchs of your VALORANT account",
+      type: ApplicationCommandOptionType.Subcommand,
+      options: [
+        {
+          name: "member",
+          description: "The member",
+          type: ApplicationCommandOptionType.User,
+          required: false,
+        },
+        {
+          name: "valorant-tag",
+          description: "Your VALORANT username with tag",
+          type: ApplicationCommandOptionType.String,
+          required: false,
+        },
+      ],
+    },
+    {
+      name: "view-shop",
+      description: "Unlink your VALORANT account",
+      type: ApplicationCommandOptionType.Subcommand,
+    },
   ],
   async run(client, interaction) {
-    const options = interaction.options;
-    const subcommand = options.getSubcommand();
-    const args = options.getString("valorant-tag");
-    const user = options.getUser("member") || interaction.user;
-
     await interaction.deferReply();
-    const accounts = await ValorantAccount.find({ discordId: user.id });
-    const playerID = encodeURI(args).toLowerCase() || "";
-
-    const perm = await checkPermissions(interaction, user);
-
-    if (!perm) {
-      interaction.editReply({
+    if (!checkPermissions(interaction)) {
+      return await interaction.editReply({
         embeds: [await createEmbed.embed(PERMISSION_ERROR_MESSAGE, Colors.Red)],
       });
-      return;
     }
+
+    const subcommand = interaction.options.getSubcommand();
+    let playerTag = interaction.options.getString("valorant-tag");
+    const matchIdString = interaction.options.getString("match_id");
+    const user = interaction.options.getUser("member") || interaction.user;
+    const accounts = await ValorantAccount.find({ discordId: user.id });
 
     try {
       switch (subcommand) {
         case "link":
-          if (!validateValorantTag(interaction, playerID)) return;
-
-          await ValorantAccount.deleteMany({ discordId: user.id });
-          await ValorantAccount.create({
-            username: user.username,
-            discordId: user.id,
-            valorantAccount: playerID,
-          });
-
-          interaction.editReply({
-            embeds: [
-              await createEmbed.embed(
-                !perm
-                  ? `${emojis.info} Successfully force-linked account \`${args}\` to ${user}`
-                  : `${emojis.success} Successfully linked account ${args} to your Discord ID`
-              ),
-            ],
-          });
+          await response(interaction, `${emojis.loading} Fetching User...`);
+          await linkCommand(interaction, user, playerTag);
           break;
-
-        case "linked":
-          if (accounts.length > 0) {
-            const linkedAccount = decodeURI(accounts[0].valorantAccount);
-
-            interaction.editReply({
-              embeds: [
-                await createEmbed.embed(
-                  !perm
-                    ? `${emojis.info} ${user} are linked to account \`${linkedAccount}\``
-                    : `${emojis.success} Your linked account is \`${linkedAccount}\``
-                ),
-              ],
-            });
-          } else {
-            interaction.editReply({
-              embeds: [
-                await createEmbed.embed(
-                  !perm
-                    ? `${emojis.info} ${user} don't have an account connected to his Discord ID`
-                    : `${emojis.error} You don't have an account linked!\nUse </valorant link:1224802493104521237> to link an account to your Discord ID`,
-                  Colors.Red
-                ),
-              ],
-            });
-          }
+        case "my-account":
+          await response(interaction, `${emojis.loading} Fetching User...`);
+          await myAccountCommand(interaction, accounts, playerTag);
           break;
-
+        case "last-match":
+          await response(
+            interaction,
+            `${emojis.loading} Fetching last match...`
+          );
+          await lastMatchCommand(interaction, accounts, playerTag);
+          break;
+        case "view-match":
+          await response(interaction, `${emojis.loading} Fetching match...`);
+          await viewMatchCommand(interaction, matchIdString);
+          break;
+        case "view-carrier":
+          await response(interaction, `${emojis.loading} Fetching carrier...`);
+          await viewCarrierCommand(interaction, accounts, playerTag);
+          break;
+        case "view-shop":
+          await response(interaction, `${emojis.loading} Fetching shop...`);
+          await response(interaction, `${emojis.info} Comming soon (maybe)...`);
+          break;
         case "unlink":
-          await ValorantAccount.deleteMany({ discordId: user.id });
-          interaction.editReply({
-            embeds: [
-              await createEmbed.embed(
-                interaction.user !== user
-                  ? `${emojis.info} You have well force-unlinked ${user}`
-                  : `${emojis.error} Successfuly unlinked any accounts connected to your Discord ID`
-              ),
-            ],
-          });
+          await response(interaction, `${emojis.loading} Fetching User...`);
+          await unLinkCommand(interaction, user);
           break;
       }
     } catch (error) {
-      console.error(error);
-      interaction.editReply({
-        embeds: [
-          await createEmbed.embed(
-            `${emojis.error} An error occurred\n> \`${error.message}\``,
-            Colors.Red
-          ),
-        ],
-      });
+      await handleError(interaction, error);
     }
   },
 };
+
+// Helper functions
+const checkPermissions = (interaction) => {
+  const user = interaction.options.getUser("member") || interaction.user;
+  return (
+    user.id === interaction.user.id ||
+    interaction.member.permissions.has(PermissionFlagsBits.Administrator)
+  );
+};
+
+const validateValorantTag = (tag) => tag.includes("#");
+
+const handleError = async (interaction, error) => {
+  let errorMessage = `${emojis.error} An error occurred`;
+  if (error.response && error.response.data) {
+    const apiError = error.response.data.message || error.response.data.details;
+    errorMessage += `: ${apiError}`;
+  } else {
+    errorMessage += `: ${error.message}`;
+  }
+  console.error(error);
+  await interaction.editReply({
+    embeds: [await createEmbed.embed(errorMessage, Colors.Red)],
+  });
+};
+
+async function response(interaction, message) {
+  await interaction.editReply({
+    embeds: [await createEmbed.embed(message, Colors.Orange)],
+  });
+}
+
+async function fetchValorantAccountDetails(playerTag) {
+  const [name, tag] = playerTag.split("#");
+  const accountResponse = await valorantAPI.getAccount({ name, tag });
+
+  if (!accountResponse || accountResponse.status !== 200) {
+    throw new Error(`The player ${playerTag} does not exist!`);
+  }
+
+  return accountResponse;
+}
+
+async function updateLinkedAccount(user, valorantData) {
+  await ValorantAccount.deleteMany({ discordId: user.id });
+  await ValorantAccount.create({
+    username: user.username,
+    discordId: user.id,
+    valorantAccount: valorantData.puuid,
+  });
+
+  const mmrResponse = await valorantAPI.getMMRByPUUID({
+    version: "v1",
+    region: valorantData.region,
+    puuid: valorantData.puuid,
+  });
+
+  if (!mmrResponse || mmrResponse.status !== 200) {
+    throw new Error(
+      `Could not fetch MMR details for ${valorantData.name}#${valorantData.tag}`
+    );
+  }
+
+  return mmrResponse.data;
+}
+
+async function createLinkEmbed(
+  user,
+  valorantData,
+  mmrData,
+  interactionUser,
+  linked = false
+) {
+  const isSelf = user.id ? user.id === interactionUser.id : false;
+  const image =
+    mmrData.images?.small ||
+    "https://static.wikia.nocookie.net/valorant/images/b/b2/TX_CompetitiveTier_Large_0.png/revision/latest?cb=20200623203757";
+  const embed = new EmbedBuilder()
+    .setThumbnail(image)
+    .setDescription(
+      `${
+        linked
+          ? `${isSelf === true ? emojis.success : emojis.info} ${
+              isSelf === true ? `Your are linked!` : `${user} are linked!`
+            }`
+          : `${isSelf === true ? emojis.success : emojis.info} ${
+              isSelf === true
+                ? "Successfully linked!"
+                : `Successfully force-linked to ${user}!`
+            }`
+      }` +
+        `\n> Account ${emojis.arrow} \`${valorantData.name}#${valorantData.tag}\`` +
+        `\n> Region ${emojis.arrow} \`${valorantData.region}\`` +
+        `\n> Account level ${emojis.arrow} \`${valorantData.account_level}\``
+    )
+    .setImage(valorantData.card.wide || "")
+    .setColor(linked === false ? Colors.Green : Colors.Purple);
+
+  return embed;
+}
+
+async function linkCommand(interaction, user, playerTag) {
+  // Validate tag format
+  if (!validateValorantTag(playerTag)) {
+    throw new Error("You have entered an invalid Valorant username and tag!");
+  }
+
+  // Fetch and link account details
+  const valorantData = await fetchValorantAccountDetails(playerTag);
+  const mmrData = await updateLinkedAccount(user, valorantData);
+
+  // Create and send the embed
+  const embed = createLinkEmbed(
+    user,
+    valorantData,
+    mmrData,
+    interaction.user,
+    false
+  );
+  await interaction.editReply({ embeds: [await embed] });
+}
+
+async function unLinkCommand(interaction, user) {
+  await ValorantAccount.deleteMany({ discordId: user.id });
+  const message = `${emojis.success} Valorant account unlinked successfully.`;
+  await interaction.editReply({
+    embeds: [await createEmbed.embed(message, Colors.Green)],
+  });
+}
+
+async function viewMatchCommand(interaction, matchIdString) {
+  if (!matchIdString) {
+    throw new Error("Match ID must be provided to view a match.");
+  }
+  const MatchUtil = new MatchEmbed(interaction);
+  await MatchUtil.setMatchId(matchIdString);
+  await MatchUtil.generate();
+}
+
+async function getPuuid(accounts, playerTag) {
+  let puuid;
+  let declared = false;
+
+  if (playerTag && playerTag !== undefined) {
+    const player = await fetchValorantAccountDetails(playerTag);
+    puuid = player.data.puuid;
+    declared = true;
+  } else {
+    puuid = accounts[0].valorantAccount;
+  }
+
+  if (accounts.length === 0 && !declared) {
+    throw new Error(
+      `No Valorant account linked.\nUse the ${commandId} \`valorant-tag: YourValorantUserName#YourValorantTag\` to connect an account.`
+    );
+  }
+  return puuid;
+}
+
+async function myAccountCommand(interaction, accounts, playerTag) {
+  const puuid = await getPuuid(accounts, playerTag);
+  const valorant = new Valorant(interaction, puuid);
+  valorant.getValorantAccountInfos();
+}
+
+async function lastMatchCommand(interaction, accounts, playerTag) {
+  const puuid = await getPuuid(accounts, playerTag);
+  const MatchUtil = new MatchEmbed(interaction, puuid);
+  await MatchUtil.getLastMatch();
+  await MatchUtil.generate();
+}
+
+async function viewCarrierCommand(interaction, accounts, playerTag) {
+  const puuid = await getPuuid(accounts, playerTag);
+  const valorant = new Valorant(interaction, puuid);
+  valorant.displayLast10Matches();
+}
