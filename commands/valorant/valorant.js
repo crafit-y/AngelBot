@@ -21,23 +21,24 @@ const commandViewMatch = `</valorant view-match:${process.env.VALORANT_COMMAND_I
 // Command execution
 module.exports = {
   name: "valorant",
-  description: "Manage your VALORANT account linkage",
+  description: "Manage your VALORANT account linkage and access game features",
   permissions: [],
   options: [
     {
       name: "link",
-      description: "Link your VALORANT account",
+      description: "Link your VALORANT account to Discord",
       type: ApplicationCommandOptionType.Subcommand,
       options: [
         {
           name: "valorant-tag",
-          description: "Your VALORANT username with tag",
+          description:
+            "Enter your VALORANT username and tag (e.g., Player#NA1)",
           type: ApplicationCommandOptionType.String,
           required: true,
         },
         {
           name: "member",
-          description: "Force link the member (mod only)",
+          description: "Admin-only: Link another user's VALORANT account",
           type: ApplicationCommandOptionType.User,
           required: false,
         },
@@ -45,18 +46,18 @@ module.exports = {
     },
     {
       name: "my-account",
-      description: "Show your VALORANT account",
+      description: "Display linked VALORANT account information",
       type: ApplicationCommandOptionType.Subcommand,
       options: [
         {
           name: "member",
-          description: "The member",
+          description: "Specify a member to view their linked VALORANT account",
           type: ApplicationCommandOptionType.User,
           required: false,
         },
         {
           name: "valorant-tag",
-          description: "Your VALORANT username with tag",
+          description: "View account details for a specific VALORANT tag",
           type: ApplicationCommandOptionType.String,
           required: false,
         },
@@ -64,12 +65,12 @@ module.exports = {
     },
     {
       name: "unlink",
-      description: "Unlink your VALORANT account",
+      description: "Unlink your VALORANT account from Discord",
       type: ApplicationCommandOptionType.Subcommand,
       options: [
         {
           name: "member",
-          description: "Force un-link the member (mod only)",
+          description: "Admin-only: Unlink another user's VALORANT account",
           type: ApplicationCommandOptionType.User,
           required: false,
         },
@@ -77,18 +78,18 @@ module.exports = {
     },
     {
       name: "last-match",
-      description: "Unlink your VALORANT account",
+      description: "Retrieve details of your last VALORANT match",
       type: ApplicationCommandOptionType.Subcommand,
       options: [
         {
           name: "member",
-          description: "The member",
+          description: "Specify a member to view their last VALORANT match",
           type: ApplicationCommandOptionType.User,
           required: false,
         },
         {
           name: "valorant-tag",
-          description: "Your VALORANT username with tag",
+          description: "View last match details for a specific VALORANT tag",
           type: ApplicationCommandOptionType.String,
           required: false,
         },
@@ -96,12 +97,12 @@ module.exports = {
     },
     {
       name: "view-match",
-      description: "Unlink your VALORANT account",
+      description: "View details of a specific VALORANT match",
       type: ApplicationCommandOptionType.Subcommand,
       options: [
         {
           name: "match_id",
-          description: "Force un-link the member (mod only)",
+          description: "Enter the match ID to retrieve details",
           type: ApplicationCommandOptionType.String,
           required: true,
         },
@@ -109,18 +110,18 @@ module.exports = {
     },
     {
       name: "view-carrier",
-      description: "See 10 last matchs of your VALORANT account",
+      description: "View the match history of the linked VALORANT account",
       type: ApplicationCommandOptionType.Subcommand,
       options: [
         {
           name: "member",
-          description: "The member",
+          description: "Specify a member to view their match history",
           type: ApplicationCommandOptionType.User,
           required: false,
         },
         {
           name: "valorant-tag",
-          description: "Your VALORANT username with tag",
+          description: "View match history for a specific VALORANT tag",
           type: ApplicationCommandOptionType.String,
           required: false,
         },
@@ -128,10 +129,11 @@ module.exports = {
     },
     {
       name: "view-shop",
-      description: "Unlink your VALORANT account",
+      description: "View the current store offerings in VALORANT",
       type: ApplicationCommandOptionType.Subcommand,
     },
   ],
+
   async run(client, interaction) {
     await interaction.deferReply();
     if (!checkPermissions(interaction)) {

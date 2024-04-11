@@ -23,11 +23,36 @@ module.exports = {
           `-> Erreur lors de la récupération de l'adresse IP: ${error}`
         );
       });
+
     Logger.client("-> " + process.env.VERSION);
     Logger.client("-> Le bot est prêt");
 
     const devGuild = await client.guilds.cache.get("1201436290059604079");
+
     devGuild.commands.set(client.commands.map((command) => command));
+
+    // Delete all commands
+    // let guild = client.guilds.cache.get("1201436290059604079");
+
+    // if (guild) {
+    //   // Récupère toutes les commandes du serveur
+    //   let commands = await guild.commands.fetch();
+
+    //   // Boucle pour supprimer chaque commande
+    //   commands.forEach(async (command) => {
+    //     await guild.commands.delete(command.id);
+    //     console.log(`Commande supprimée: ${command.name}`);
+    //   });
+    // } else {
+    //   // Récupère toutes les commandes globales si aucune guild n'est spécifiée
+    //   let commands = await client.application.commands.fetch();
+
+    //   // Boucle pour supprimer chaque commande
+    //   commands.forEach(async (command) => {
+    //     await client.application.commands.delete(command.id);
+    //     console.log(`Commande globale supprimée: ${command.name}`);
+    //   });
+    // }
 
     setInterval(async () => {
       // Récupération du statut du live

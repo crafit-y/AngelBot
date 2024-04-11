@@ -4,6 +4,9 @@ const path = require("path");
 const ValorantAPIClient = require("../api/valorant-api");
 const valorantAPI = new ValorantAPIClient("");
 
+const PartyEmojiManager = require("./PartyEmojiManager");
+const partyEmojiManager = new PartyEmojiManager();
+
 const { createEmbed } = require("../all/Embeds");
 const assets = require("../../utils/valorant/assets.json");
 const emojis = require("../../utils/emojis.json");
@@ -64,22 +67,6 @@ function getEmojiForPartyId(partyId) {
   }
 }
 
-const emojisList = [
-  "<:5_:1227405092806721627>",
-  "<:1_:1227405093964611584>",
-  "<:2_:1227405095319113748>",
-  "<:3_:1227405096720138312>",
-  "<:4_:1227405097902805186>",
-  "<:9_:1227405072758083594>",
-  "<:7_:1227405053669937323>",
-  "<:8_:1227405054831628321>",
-  "<:6_:1227405052054868041>",
-  "<:10:1227405074096062555>",
-  "<:11:1227405075333513236>",
-  "<:12:1227405069641715712>",
-  "<:13:1227405071185084466>",
-];
-
 // Vous pouvez ensuite passer cette liste à
 
 let highestScore = 0;
@@ -88,11 +75,11 @@ let bestPlayerName = "";
 function generatePlayerFields(player) {
   const { name, tag, team, party_id, character, stats, currenttier_patched } =
     player;
-  const { kills, deaths, assists, headshots } = stats;
+  const { kills, deaths, assists, headshots, score } = stats;
 
   const agentEmoji =
     assets.agentEmojis[character]?.emoji || ":white_small_square:";
-  const partyEmoji = getEmojiForPartyId(party_id, emojisList); // Utilise la fonction ci-dessus pour obtenir un émoji
+  const partyEmoji = partyEmojiManager.getEmojiForPartyId(player.party_id);
 
   const isBestPlayer = player.name === bestPlayerName;
   const bestPlayerEmoji = isBestPlayer ? assets.ranks.Mvp.emoji : ""; // Utilisez l'emoji de votre choix
@@ -126,8 +113,12 @@ function generatePlayerFields(player) {
         colorLetter,
         "D",
         deaths
-      )}${separator}${formatStatLine(colorLetter, "A", assists)}\n` +
-      `${colorStats}${kills}${separator}${colorStats}${deaths}${separator}${colorStats}${assists}` +
+      )}${separator}${formatStatLine(
+        colorLetter,
+        "A",
+        assists
+      )}${separator}${formatStatLine(colorLetter, "CS", score)}\n` +
+      `${colorStats}${kills}${separator}${colorStats}${deaths}${separator}${colorStats}${assists}${separator}${colorStats}${score}` +
       "```" +
       "```ansi\n" +
       `${formatStatLine(
@@ -335,15 +326,23 @@ class MatchEmbed {
         if (!acc[player.party_id]) {
           acc[player.party_id] = [];
         }
-        acc[player.party_id].push(player.name); // ou push(player) si vous avez besoin de plus d'infos sur le joueur
+        acc[player.party_id].push(player.name);
         return acc;
       }, {});
+
       const partyList = Object.keys(partys)
         .map((partyId, index) => {
-          const partyEmoji = getEmojiForPartyId(partyId, emojisList); // Génère l'émoji pour l'équipe basé sur party_id
-          return `${partyEmoji} Party ${index + 1}`; // Formate la chaîne avec l'émoji et le numéro de l'équipe
+          const partyEmoji = partyEmojiManager.getEmojiForPartyId(partyId);
+          return `${partyEmoji} Party ${index + 1}`;
         })
-        .join(", ");
+        .reduce((acc, item, index) => {
+          const groupIndex = Math.floor(index / 5);
+          if (!acc[groupIndex]) acc[groupIndex] = [];
+          acc[groupIndex].push(item);
+          return acc;
+        }, [])
+        .map((group) => group.join(" | "))
+        .join("\n");
 
       matchEmbed.addFields({
         name: `Current parties:`,
@@ -473,12 +472,14 @@ class MatchEmbed {
           const image =
             "https://static.wikia.nocookie.net/valorant/images/b/b2/TX_CompetitiveTier_Large_0.png/revision/latest?cb=20200623203757";
           const mmrImages = mmrData?.images;
-          matchEmbed.setThumbnail(
+          const embedThumbnail =
             status != null
               ? status === "win"
-                ? mmrImages.triangle_up
-                : mmrImages.triangle_down
-              : image
+                ? mmrImages?.triangle_up
+                : mmrImages?.triangle_down
+              : image;
+          matchEmbed.setThumbnail(
+            embedThumbnail != null ? embedThumbnail : image
           );
           break;
 

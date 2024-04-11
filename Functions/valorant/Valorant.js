@@ -38,8 +38,6 @@ async function CarrierStringGenerator(matchsMmrData, puuid) {
 
     const draw = (await red?.has_won) === false && blue?.has_won === false;
 
-    console.log(status);
-
     status = status
       ? status === "win"
         ? "win"
@@ -74,6 +72,7 @@ function createInitialEmbed(valorant, matchCount) {
     embed.addFields({
       name: `Match ${i + 1}`,
       value: `${emojis.loading} Fetching match data...`,
+      inline: true,
     });
   }
   return embed;
@@ -112,32 +111,48 @@ function carrierMatchField(player, status, matchData, matchScore) {
   const agentEmoji =
     assets.agentEmojis[player.character]?.emoji || ":white_small_square:";
 
-  const { kills, deaths, assists, headshots } = player.stats;
+  const { kills, deaths, assists, headshots, score } = player.stats;
 
   const colorLetter = status === "win" ? "\u001b[32m" : "\u001b[31m"; // ANSI colors for red and blue
   const colorStats = "\u001b[33m"; // ANSI color for stats
   const separator = `\u001b[36m|`;
 
-  const name = `${assets.rounds.status[status]}${agentEmoji} ${emojis.arrow} ${matchData.metadata.map} ${emojis.arrow} ${matchScore} ${emojis.arrow} <t:${matchData.metadata.game_start}:F> - <t:${matchData.metadata.game_start}:R>`;
+  const name = `${assets.rounds.status[status]}${agentEmoji} ${emojis.arrow} ${matchScore}\n${matchData.metadata.map}\n<t:${matchData.metadata.game_start}:F>\n<t:${matchData.metadata.game_start}:R>`;
 
   const value =
+    // "```ansi\n" +
+    // `${formatStatLine(colorLetter, "K", kills)}${separator}${formatStatLine(
+    //   colorLetter,
+    //   "D",
+    //   deaths
+    // )}${separator}${formatStatLine(
+    //   colorLetter,
+    //   "A",
+    //   assists
+    // )}${separator}${formatStatLine(colorLetter, "CS", score)}${separator}` +
+    // `${formatStatLine(
+    //   colorLetter,
+    //   "Ratio",
+    //   calculateKDA(kills, deaths, assists)
+    // )}${separator}${formatStatLine(colorLetter, "HS", headshots)}\n` +
+    // `${colorStats}${kills}${separator}${colorStats}${deaths}${separator}${colorStats}${assists}${separator}${colorStats}${score}${separator}` +
+    // `${colorStats}${calculateKDA(
+    //   kills,
+    //   deaths,
+    //   assists
+    // )}${separator}${colorStats}${headshots}%` +
+    // "```" +
     "```ansi\n" +
     `${formatStatLine(colorLetter, "K", kills)}${separator}${formatStatLine(
       colorLetter,
       "D",
       deaths
-    )}${separator}${formatStatLine(colorLetter, "A", assists)}${separator}` +
-    `${formatStatLine(
+    )}${separator}${formatStatLine(
       colorLetter,
-      "Ratio",
-      calculateKDA(kills, deaths, assists)
-    )}${separator}${formatStatLine(colorLetter, "HS", headshots)}\n` +
-    `${colorStats}${kills}${separator}${colorStats}${deaths}${separator}${colorStats}${assists}${separator}` +
-    `${colorStats}${calculateKDA(
-      kills,
-      deaths,
+      "A",
       assists
-    )}${separator}${colorStats}${headshots}%` +
+    )}${separator}${formatStatLine(colorLetter, "CS", score)}\n` +
+    `${colorStats}${kills}${separator}${colorStats}${deaths}${separator}${colorStats}${assists}${separator}${colorStats}${score}` +
     "```" +
     `\`\`\`${matchData.metadata.matchid}\`\`\``;
   return { nameStr: name, valueStr: value };
@@ -192,10 +207,39 @@ async function createAccountEmbed(valorant, matchsMmrData) {
         }\`\`\``
       : `${rankEmoji} ${highestRank?.patched_tier}`;
 
+  const match = await valorantAPI.getMatch(matchsMmrData[0]?.match_id);
+  const matchData = match?.data;
+  const { red = {}, blue = {} } = matchData.teams || {};
+  const playersData = matchData?.players;
+  const player = playersData?.all_players?.find((p) => p.puuid === puuid);
+
+  let status = null;
+  let playerTeam = player?.team === "Blue" ? "blue" : "red";
+  let opponentTeam = player?.team === "Blue" ? "red" : "blue";
+  let matchScore;
+
+  if (player) {
+    status = matchData?.teams[playerTeam]?.has_won ? "win" : "loose";
+
+    const playerTeamScore = matchData?.teams[playerTeam]?.rounds_won;
+    const opponentTeamScore = matchData?.teams[opponentTeam]?.rounds_won;
+
+    matchScore = `${playerTeamScore} - ${opponentTeamScore}`;
+  }
+
+  const draw = red.has_won === false && blue.has_won === false;
+  status = winEmojis(status, draw);
+
+  const agentEmoji =
+    assets.agentEmojis[player?.character]?.emoji || ":white_small_square:";
+
   const RRchange = matchsMmrData[0]
-    ? `Map: ${matchsMmrData[0]?.map?.name || "No data"}\nDate: ${
+    ? `${assets.rounds.status[status]}${agentEmoji} ${emojis.arrow} ${matchScore}\n` +
+      //`${matchsMmrData[0]?.map?.name || "No data"}\n` +
+      `${
         matchsMmrData[0] ? `<t:${matchsMmrData[0]?.date_raw}:R>` : "No data"
-      }\n\`\`\`ansi\n${
+      }\n` +
+      `\`\`\`ansi\n${
         mmrChange >= 0 ? `\u001b[32m+` : `\u001b[31m`
       }${mmrChange}RR\`\`\``
     : "No data";
@@ -323,17 +367,12 @@ class Valorant {
           playerTeam = player.team === "Blue" ? "blue" : "red";
           opponentTeam = player.team === "Blue" ? "red" : "blue";
           status = matchData.teams[playerTeam].has_won ? "win" : "loose";
+
+          const playerTeamScore = matchData.teams[playerTeam].rounds_won;
+          const opponentTeamScore = matchData.teams[opponentTeam].rounds_won;
+
+          matchScore = `${playerTeamScore} - ${opponentTeamScore}`;
         }
-
-        // Supposons que matchData.teams contient des propriétés comme team_blue_score et team_red_score
-        const playerTeamScore = matchData.teams[playerTeam].rounds_won;
-        const opponentTeamScore = matchData.teams[opponentTeam].rounds_won;
-
-        // Créez la constante pour afficher les scores, en mettant toujours le score du joueur en premier
-        matchScore =
-          status === "win"
-            ? `${playerTeamScore} - ${opponentTeamScore}`
-            : `${opponentTeamScore} - ${playerTeamScore}`;
 
         const draw = red.has_won === false && blue.has_won === false;
         status = winEmojis(status, draw);
@@ -459,7 +498,7 @@ class Valorant {
       // Met à jour le message avec le nouvel embed
       await interaction.editReply({ embeds: [newEmbed] });
     } catch (e) {
-      await handleError(interaction, error);
+      await handleError(interaction, e);
     }
   }
 }
