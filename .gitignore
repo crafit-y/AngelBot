@@ -2,3 +2,7 @@
 package-lock.json
 node_modules/
 data/
+LEADERBOARD.json
+LIVE-STATUS.json
+PARTY.json
+TEAMS.json
