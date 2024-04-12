@@ -11,18 +11,18 @@ module.exports = {
   name: "ready",
   once: true,
   async execute(client) {
-    await axios
-      .get("https://api.ipify.org?format=json")
-      .then((response) => {
-        Logger.client(
-          `-> L'adresse IP publique du serveur est : ${response.data.ip}`
-        );
-      })
-      .catch((error) => {
-        Logger.clientError(
-          `-> Erreur lors de la récupération de l'adresse IP: ${error}`
-        );
-      });
+    // await axios
+    //   .get("https://api.ipify.org?format=json")
+    //   .then((response) => {
+    //     Logger.client(
+    //       `-> L'adresse IP publique du serveur est : ${response.data.ip}`
+    //     );
+    //   })
+    //   .catch((error) => {
+    //     Logger.clientError(
+    //       `-> Erreur lors de la récupération de l'adresse IP: ${error}`
+    //     );
+    //   });
 
     Logger.client("-> " + process.env.VERSION);
     Logger.client("-> Le bot est prêt");
