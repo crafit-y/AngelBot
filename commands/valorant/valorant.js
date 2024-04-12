@@ -220,7 +220,7 @@ async function response(interaction, message) {
 }
 
 async function fetchValorantAccountDetails(playerTag) {
-  const [name, tag] = playerTag.split("#");
+  const [name, tag] = playerTag.replaceAll(" ", "").split("#");
   const accountResponse = await valorantAPI.getAccount({ name, tag });
 
   if (!accountResponse || accountResponse.status !== 200) {

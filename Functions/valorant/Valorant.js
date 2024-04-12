@@ -1,4 +1,11 @@
-const { EmbedBuilder, Colors, AttachmentBuilder } = require("discord.js");
+const {
+  EmbedBuilder,
+  Colors,
+  AttachmentBuilder,
+  StringSelectMenuOptionBuilder,
+  StringSelectMenuBuilder,
+  ActionRowBuilder,
+} = require("discord.js");
 const path = require("path");
 
 const ValorantAPIClient = require("../api/valorant-api");
@@ -66,15 +73,23 @@ function createInitialEmbed(valorant, matchCount) {
   const embed = new EmbedBuilder()
     .setColor(Colors.Purple)
     .setDescription(
-      `## ${emojis.info} Fetching User carrier of \`${valorant.name}#${valorant.tag}\`...\nPlease wait.`
+      `## ${emojis.info} Fetching User carrier of \`${valorant.name}#${valorant.tag}\`...\n${emojis.loading} Please wait...`
     );
+  let fields = 0;
   for (let i = 0; i < matchCount; i++) {
     embed.addFields({
       name: `Match ${i + 1}`,
       value: `${emojis.loading} Fetching match data...`,
       inline: true,
     });
+    fields++;
   }
+
+  const additionalFields = addInlineFields(fields);
+  if (additionalFields.length > 0) {
+    embed.addFields(additionalFields);
+  }
+
   return embed;
 }
 
@@ -117,7 +132,7 @@ function carrierMatchField(player, status, matchData, matchScore) {
   const colorStats = "\u001b[33m"; // ANSI color for stats
   const separator = `\u001b[36m|`;
 
-  const name = `${assets.rounds.status[status]}${agentEmoji} ${emojis.arrow} ${matchScore}\n${matchData.metadata.map}\n<t:${matchData.metadata.game_start}:F>\n<t:${matchData.metadata.game_start}:R>`;
+  const name = `${assets.rounds.status[status]}${agentEmoji} ${emojis.arrow} ${matchScore}\n${matchData.metadata.map}\n<t:${matchData.metadata.game_start}:R>`;
 
   const value =
     // "```ansi\n" +
@@ -153,9 +168,18 @@ function carrierMatchField(player, status, matchData, matchScore) {
       assists
     )}${separator}${formatStatLine(colorLetter, "CS", score)}\n` +
     `${colorStats}${kills}${separator}${colorStats}${deaths}${separator}${colorStats}${assists}${separator}${colorStats}${score}` +
-    "```" +
-    `\`\`\`${matchData.metadata.matchid}\`\`\``;
-  return { nameStr: name, valueStr: value };
+    "```";
+  //`\`\`\`${matchData.metadata.matchid}\`\`\``;
+
+  const option = new StringSelectMenuOptionBuilder()
+    .setLabel(`${matchData.metadata.map} ${emojis.arrow} ${matchScore}`)
+    .setEmoji(assets.rounds.status[status])
+    .setValue(matchData.metadata.matchid);
+  return {
+    nameStr: name,
+    valueStr: value,
+    option: option,
+  };
 }
 
 async function createAccountEmbed(valorant, matchsMmrData) {
@@ -303,6 +327,24 @@ const handleError = async (interaction, error) => {
   });
 };
 
+function timeout(ms, message = "Timed out") {
+  return new Promise((resolve, reject) => {
+    setTimeout(() => reject(new Error(message)), ms);
+  });
+}
+
+function addInlineFields(fieldsCount) {
+  // Cette fonction ajoute des champs vides pour faire en sorte que le nombre total de champs soit un multiple de trois.
+  const fieldsArray = [];
+  let missingFields = 3 - (fieldsCount % 3);
+  if (fieldsCount % 3 !== 0) {
+    for (let i = 0; i < missingFields; i++) {
+      fieldsArray.push({ name: "\u200B", value: "\u200B", inline: true });
+    }
+  }
+  return fieldsArray;
+}
+
 class Valorant {
   constructor(interaction, puuid) {
     this.interaction = interaction;
@@ -317,6 +359,7 @@ class Valorant {
 
     if (!valorant || valorant.status !== 200) {
       valorant = null;
+      await handleError(this.interaction, "Invalid response from API");
       throw new Error("Invalid response from API");
     }
 
@@ -340,78 +383,123 @@ class Valorant {
         throw new Error("Invalid response from API");
       }
 
-      const matchsMmrData = matchsMmr.data.slice(0, 10); // Limitez à 10 matchs
+      const matchsMmrData = matchsMmr.data.slice(0, 9); // Limitez à 10 matchs
       const embed = createInitialEmbed(valorant.data, matchsMmrData.length); // Créez l'embed initial avec les champs de chargement
       const message = await interaction.editReply({ embeds: [embed] }); // Envoyez l'embed initial
+      const selectMenu = new StringSelectMenuBuilder()
+        .setCustomId("display-the-matchid")
+        .setMinValues(1)
+        .setMaxValues(1)
+        .setPlaceholder("Select the match you want to diplay");
+      const errorCount = 0;
 
       let wins = 0;
       for (let i = 0; i < matchsMmrData.length; i++) {
         await new Promise((resolve) => setTimeout(resolve, 750));
         const match = matchsMmrData[i];
-        let getMatch = await valorantAPI.getMatch(match.match_id);
-        if (!getMatch || getMatch.status !== 200) {
-          continue; // Si la récupération du match échoue, passez au suivant
-        }
-
-        const matchData = getMatch.data;
-        const playersData = matchData.players;
-        const { red = {}, blue = {} } = matchData.teams || {};
-        const puuid = valorantData.puuid;
-        const player = playersData.all_players.find((p) => p.puuid === puuid);
-        let status = null;
-        let playerTeam = player.team === "Blue" ? "blue" : "red";
-        let opponentTeam = player.team === "Blue" ? "red" : "blue";
-        let matchScore;
-
-        if (player) {
-          playerTeam = player.team === "Blue" ? "blue" : "red";
-          opponentTeam = player.team === "Blue" ? "red" : "blue";
-          status = matchData.teams[playerTeam].has_won ? "win" : "loose";
-
-          const playerTeamScore = matchData.teams[playerTeam].rounds_won;
-          const opponentTeamScore = matchData.teams[opponentTeam].rounds_won;
-
-          matchScore = `${playerTeamScore} - ${opponentTeamScore}`;
-        }
-
-        const draw = red.has_won === false && blue.has_won === false;
-        status = winEmojis(status, draw);
-
-        if (status === "win") {
-          wins++;
-        }
-
-        let name;
-        let value;
 
         try {
-          const { nameStr, valueStr } = carrierMatchField(
-            player,
-            status,
-            matchData,
-            matchScore
+          const getMatch = await Promise.race([
+            valorantAPI.getMatch(match.match_id),
+            timeout(5000, "Error occurred during match retrieval"),
+          ]);
+          if (!getMatch || getMatch.status !== 200) {
+            continue; // Si la récupération du match échoue, passez au suivant
+          }
+
+          const matchData = getMatch.data;
+          const playersData = matchData.players;
+          const { red = {}, blue = {} } = matchData.teams || {};
+          const puuid = valorantData.puuid;
+          const player = playersData.all_players.find((p) => p.puuid === puuid);
+          let status = null;
+          let playerTeam = player.team === "Blue" ? "blue" : "red";
+          let opponentTeam = player.team === "Blue" ? "red" : "blue";
+          let matchScore;
+
+          if (player) {
+            playerTeam = player.team === "Blue" ? "blue" : "red";
+            opponentTeam = player.team === "Blue" ? "red" : "blue";
+            status = matchData.teams[playerTeam].has_won ? "win" : "loose";
+
+            const playerTeamScore = matchData.teams[playerTeam].rounds_won;
+            const opponentTeamScore = matchData.teams[opponentTeam].rounds_won;
+
+            matchScore = `${playerTeamScore} - ${opponentTeamScore}`;
+          }
+
+          const draw = red.has_won === false && blue.has_won === false;
+          status = winEmojis(status, draw);
+
+          if (status === "win") {
+            wins++;
+          }
+
+          let name;
+          let value;
+
+          try {
+            const { nameStr, valueStr, option } = carrierMatchField(
+              player,
+              status,
+              matchData,
+              matchScore
+            );
+            name = nameStr;
+            value = valueStr;
+            selectMenu.addOptions(option);
+          } catch (error) {
+            const oldEmbed = message?.embeds[0];
+            const errorStr = "Error occurred during match retrieval";
+            name = oldEmbed?.fields[i]?.name || errorStr;
+            value = `\`\`\`ansi\n\u001b[31m${errorStr}\`\`\``;
+            console.error(error);
+
+            const option = new StringSelectMenuOptionBuilder()
+              .setLabel(errorStr)
+              .setEmoji(assets.rounds.status.undefined)
+              .setValue(`${errorCount}-error`);
+            selectMenu.addOptions(option);
+            errorCount++;
+          }
+
+          embed.data.fields[i].name = name;
+          embed.data.fields[i].value = value;
+
+          let winPercentage =
+            i + 1 > 0 ? Math.round((wins / (i + 1)) * 100) : 0;
+          embed.setDescription(
+            `## ${emojis.info} Fetched User carrier of \`${valorant.data.name}#${valorant.data.tag}\`\n\`\`\`ansi\n\u001b[33mWinrate: ${winPercentage}%\`\`\`\n`
+            //`You can use the select menu to display a match ID`
           );
-          name = nameStr;
-          value = valueStr;
+          await interaction
+            .editReply({
+              embeds: [embed],
+              components: [new ActionRowBuilder().addComponents(selectMenu)],
+            })
+            .catch();
         } catch (error) {
-          const oldEmbed = message?.embeds[0];
-          name =
-            oldEmbed?.fields[i]?.name ||
-            "Error occurred during match retrieval";
-          value = `\`\`\`ansi\n\u001b[31mError occurred during match retrieval\`\`\``;
           console.error(error);
+          // Gérez ici le cas où le timeout est dépassé ou une autre erreur survient
+          const oldEmbed = message?.embeds[0];
+          const errorStr = error.message; // Utilisez le message d'erreur de la fonction timeout ou une autre erreur attrapée
+          const name = oldEmbed?.fields[i]?.name || `Match ${i + 1}`;
+          const value = `\`\`\`ansi\n\u001b[31m${errorStr}\`\`\``;
+
+          const option = new StringSelectMenuOptionBuilder()
+            .setLabel(errorStr)
+            .setEmoji(assets.rounds.status.undefined) // Assurez-vous que `assets.rounds.status.undefined` est défini
+            .setValue(`${i}-error`);
+          selectMenu.addOptions(option);
+
+          embed.data.fields[i] = { name, value, inline: true };
+          await interaction
+            .editReply({
+              embeds: [embed],
+              components: [new ActionRowBuilder().addComponents(selectMenu)],
+            })
+            .catch();
         }
-
-        embed.data.fields[i].name = name;
-        embed.data.fields[i].value = value;
-
-        let winPercentage = i + 1 > 0 ? Math.round((wins / (i + 1)) * 100) : 0;
-        embed.setDescription(
-          `## ${emojis.info} Fetched User carrier of \`${valorant.data.name}#${valorant.data.tag}\`\nWinrate: ${winPercentage}%\n` +
-            `You can use the match ID in this command\n` +
-            `${commandViewMatch} \`match_id: theMatchId\``
-        );
-        await interaction.editReply({ embeds: [embed] }).catch();
       }
     } catch (e) {
       await handleError(interaction, e);

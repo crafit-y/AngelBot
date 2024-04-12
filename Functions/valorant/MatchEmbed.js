@@ -47,24 +47,7 @@ function formatStatLine(color, label, stat) {
 function calculateKDA(kills, deaths, assists) {
   let effectiveDeaths = deaths === 0 ? 1 : deaths;
   let kda = (kills + assists) / effectiveDeaths;
-  return kda.toFixed(3);
-}
-
-const partyIdToEmojiIndex = new Map();
-let emojiCounter = 0; // Compteur pour attribuer les indices d'émojis
-
-// Fonction pour générer un index basé sur le hash du party_id
-function getEmojiForPartyId(partyId) {
-  // Si party_id est déjà connu, retourner l'émoji correspondant
-  if (partyIdToEmojiIndex.has(partyId)) {
-    return emojisList[partyIdToEmojiIndex.get(partyId) % emojisList.length];
-  } else {
-    // Sinon, attribuer le prochain émoji disponible et mettre à jour la map
-    const index = emojiCounter % emojisList.length;
-    partyIdToEmojiIndex.set(partyId, emojiCounter);
-    emojiCounter++; // Incrémenter pour le prochain party_id
-    return emojisList[index];
-  }
+  return kda.toFixed(1);
 }
 
 // Vous pouvez ensuite passer cette liste à
@@ -123,7 +106,7 @@ function generatePlayerFields(player) {
       "```ansi\n" +
       `${formatStatLine(
         colorLetter,
-        "Ratio",
+        "K/D",
         calculateKDA(kills, deaths, assists)
       )}${separator}${formatStatLine(colorLetter, "HS", headshots)}\n` +
       `${colorStats}${calculateKDA(
