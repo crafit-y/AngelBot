@@ -25,7 +25,7 @@ module.exports = {
     //   });
 
     Logger.client("-> " + process.env.VERSION);
-    Logger.client("-> Le bot est prêt");
+    Logger.client("-> Bot connected and ready !");
 
     const devGuild = await client.guilds.cache.get("1201436290059604079");
 

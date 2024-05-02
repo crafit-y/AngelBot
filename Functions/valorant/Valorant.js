@@ -9,14 +9,14 @@ const {
 const path = require("path");
 
 const ValorantAPIClient = require("../api/valorant-api");
-const valorantAPI = new ValorantAPIClient("");
+const valorantAPI = new ValorantAPIClient(process.env.HENRIK_API_KEY);
 
 const { createEmbed } = require("../all/Embeds");
 const assets = require("../../utils/valorant/assets.json");
 const emojis = require("../../utils/emojis.json");
 
-const commandId = `</valorant view-match:${process.env.VALORANT_COMMAND_ID}>`;
-const commandViewMatch = `</valorant view-match:${process.env.VALORANT_COMMAND_ID}>`;
+// const commandId = `</valorant view-match:${process.env.VALORANT_COMMAND_ID}>`;
+// const commandViewMatch = `</valorant view-match:${process.env.VALORANT_COMMAND_ID}>`;
 
 async function CarrierStringGenerator(matchsMmrData, puuid) {
   let carrierStr = [];
@@ -95,12 +95,12 @@ function createInitialEmbed(valorant, matchCount) {
 
 function winEmojis(status, draw) {
   return status
-    ? status === "win"
+    ? draw
+      ? "draw"
+      : status === "win"
       ? "win"
       : status === "loose"
       ? "loose"
-      : draw
-      ? "draw"
       : "undefined"
     : "undefined";
 }
@@ -116,11 +116,11 @@ function formatStatLine(color, label, stat) {
   return formattedString;
 }
 
-function calculateKDA(kills, deaths, assists) {
-  let effectiveDeaths = deaths === 0 ? 1 : deaths;
-  let kda = (kills + assists) / effectiveDeaths;
-  return kda.toFixed(3);
-}
+// function calculateKDA(kills, deaths, assists) {
+//   let effectiveDeaths = deaths === 0 ? 1 : deaths;
+//   let kda = (kills + assists) / effectiveDeaths;
+//   return kda.toFixed(3);
+// }
 
 function carrierMatchField(player, status, matchData, matchScore) {
   const agentEmoji =
@@ -129,7 +129,7 @@ function carrierMatchField(player, status, matchData, matchScore) {
   const { kills, deaths, assists, headshots, score } = player.stats;
 
   const colorLetter = status === "win" ? "\u001b[32m" : "\u001b[31m"; // ANSI colors for red and blue
-  const colorStats = "\u001b[33m"; // ANSI color for stats
+  const colorStats = "\u001b[35m"; // ANSI color for stats
   const separator = `\u001b[36m|`;
 
   const name = `${assets.rounds.status[status]}${agentEmoji} ${emojis.arrow} ${matchScore}\n${matchData.metadata.map}\n<t:${matchData.metadata.game_start}:R>`;
@@ -182,47 +182,99 @@ function carrierMatchField(player, status, matchData, matchScore) {
   };
 }
 
+function createProgressBar(
+  value,
+  total = 100,
+  barSize = 15,
+  emojiFilled = assets.ranks.line.blue.emoji,
+  emojiEmpty = assets.ranks.line.red.emoji
+) {
+  // Calcul du nombre d'emojis remplis
+  const filledSize = Math.round((value / total) * barSize);
+  // Création de la barre de progression
+  const bar =
+    emojiFilled.repeat(filledSize) + emojiEmpty.repeat(barSize - filledSize);
+  return bar;
+}
+
 async function createAccountEmbed(valorant, matchsMmrData) {
   const puuid = valorant.puuid;
-  let userMmr = await valorantAPI.getMMRByPUUID({
-    version: "v2",
-    region: valorant.region,
-    puuid: puuid,
-  });
-  if (!userMmr || userMmr.status !== 200) {
-    userMmr = null;
+  const region = valorant.region;
+
+  // Function to fetch user MMR and handle errors
+  async function fetchUserMMR(puuid, region) {
+    try {
+      const response = await valorantAPI.getMMRByPUUID({
+        version: "v2",
+        region: region,
+        puuid: puuid,
+      });
+      if (!response || response.status !== 200)
+        throw new Error("Failed to fetch MMR.");
+      return response.data;
+    } catch (error) {
+      console.error("Error fetching MMR:", error);
+      return null;
+    }
   }
-  const userMmrData = userMmr.data;
+
+  const userMmrData = await fetchUserMMR(puuid, region);
+
+  // const match = await valorantAPI.getMatch(matchsMmrData[0]?.match_id);
+  // const matchData = match?.data;
+  // const { red = {}, blue = {} } = matchData.teams || {};
+  // const playersData = matchData?.players;
+  // const player = playersData?.all_players?.find((p) => p.puuid === puuid);
+
+  // let status = null;
+  // let playerTeam = player?.team === "Blue" ? "blue" : "red";
+  // let opponentTeam = player?.team === "Blue" ? "red" : "blue";
+  // let matchScore;
+
+  // if (player) {
+  //   status = matchData?.teams[playerTeam]?.has_won ? "win" : "loose";
+
+  //   const playerTeamScore = matchData?.teams[playerTeam]?.rounds_won;
+  //   const opponentTeamScore = matchData?.teams[opponentTeam]?.rounds_won;
+
+  //   matchScore = `${playerTeamScore} - ${opponentTeamScore}`;
+  // }
+
+  // const draw = red.has_won === false && blue.has_won === false ? true : false;
+  // status = winEmojis(status, draw);
+
+  // const agentEmoji =
+  //   assets.agentEmojis[player?.character]?.emoji || ":white_small_square:";
+
+  // Processing retrieved data and assigning defaults
   const image =
-    userMmrData.current_data?.images?.small ||
+    userMmrData?.current_data?.images?.small ||
     "https://static.wikia.nocookie.net/valorant/images/b/b2/TX_CompetitiveTier_Large_0.png/revision/latest?cb=20200623203757";
-  const mmrChange = userMmrData.current_data?.mmr_change_to_last_game || 0;
+  const mmrChange = userMmrData?.current_data?.mmr_change_to_last_game || 0;
+  const currentMrr = userMmrData?.current_data?.ranking_in_tier || 0;
   const highestRank = userMmrData?.highest_rank;
 
+  // Extracting rank and level using regex from highestRank
   const [rank, level] =
     highestRank?.patched_tier
       .match(/^(\D+)(\d+)$/)
       ?.slice(1)
-
       .map((s, i) => (i === 1 ? parseInt(s) : s)) || [];
-
   const rankKey = rank ? rank.replaceAll(" ", "") : "";
-  let rankEmoji =
-    rankKey && assets.ranks[rankKey]
-      ? assets.ranks[rankKey][rankKey != "Radiant" ? String(level) : 1]?.emoji
-      : assets.ranks.Unrated[1].emoji;
-  rankEmoji =
+  const rankEmoji =
     highestRank?.patched_tier === "Radiant"
       ? assets.ranks.Radiant[1].emoji
-      : rankEmoji;
+      : assets.ranks[rankKey]?.[rankKey !== "Radiant" ? String(level) : 1]
+          ?.emoji || assets.ranks.Unrated[1].emoji;
 
   const wideBanner =
     valorant.card?.wide ||
     "https://static.wikia.nocookie.net/valorant/images/f/f3/Code_Red_Card_Wide.png/revision/latest?cb=20230711192605";
 
+  // Building the highest rank string
   const HRStr =
     rankEmoji != assets.ranks.Unrated[1].emoji
-      ? `${rankEmoji} ${highestRank?.patched_tier}\n\`\`\`ansi\n\u001b[33m${
+      ? `${rankEmoji} ${highestRank?.patched_tier}\n\`\`\`ansi\n\u001b[35m${
           highestRank?.season
             ? highestRank?.season
                 .replaceAll("e", "Episode ")
@@ -231,43 +283,20 @@ async function createAccountEmbed(valorant, matchsMmrData) {
         }\`\`\``
       : `${rankEmoji} ${highestRank?.patched_tier}`;
 
-  const match = await valorantAPI.getMatch(matchsMmrData[0]?.match_id);
-  const matchData = match?.data;
-  const { red = {}, blue = {} } = matchData.teams || {};
-  const playersData = matchData?.players;
-  const player = playersData?.all_players?.find((p) => p.puuid === puuid);
-
-  let status = null;
-  let playerTeam = player?.team === "Blue" ? "blue" : "red";
-  let opponentTeam = player?.team === "Blue" ? "red" : "blue";
-  let matchScore;
-
-  if (player) {
-    status = matchData?.teams[playerTeam]?.has_won ? "win" : "loose";
-
-    const playerTeamScore = matchData?.teams[playerTeam]?.rounds_won;
-    const opponentTeamScore = matchData?.teams[opponentTeam]?.rounds_won;
-
-    matchScore = `${playerTeamScore} - ${opponentTeamScore}`;
-  }
-
-  const draw = red.has_won === false && blue.has_won === false;
-  status = winEmojis(status, draw);
-
-  const agentEmoji =
-    assets.agentEmojis[player?.character]?.emoji || ":white_small_square:";
-
+  // Determining the change in Ranked Rating (RR)
   const RRchange = matchsMmrData[0]
-    ? `${assets.rounds.status[status]}${agentEmoji} ${emojis.arrow} ${matchScore}\n` +
-      //`${matchsMmrData[0]?.map?.name || "No data"}\n` +
-      `${
-        matchsMmrData[0] ? `<t:${matchsMmrData[0]?.date_raw}:R>` : "No data"
-      }\n` +
-      `\`\`\`ansi\n${
-        mmrChange >= 0 ? `\u001b[32m+` : `\u001b[31m`
-      }${mmrChange}RR\`\`\``
+    ? `${createProgressBar(currentMrr)}` +
+      `\`\`\`ansi\n` +
+      `\u001b[35m${currentMrr}/100 RR ${
+        mmrChange >= 0 ? `\u001b[32m` : `\u001b[31m`
+      }(${mmrChange >= 0 ? `+${mmrChange}` : mmrChange} RR Last game)\`\`\``
+    : userMmrData?.current_data?.games_needed_for_rating > 0
+    ? `Need ${userMmrData.current_data?.games_needed_for_rating} more game${
+        userMmrData.current_data?.games_needed_for_rating > 1 ? "s" : ""
+      } to be ranked.`
     : "No data";
 
+  // Creating the embed message
   let embed = new EmbedBuilder()
     .setThumbnail(image)
     .setDescription(
@@ -277,33 +306,18 @@ async function createAccountEmbed(valorant, matchsMmrData) {
     )
     .addFields([
       {
+        name: `MRR`,
+        value: RRchange,
+        inline: false,
+      },
+      {
         name: `Highest Rank`,
         value: HRStr,
         inline: true,
       },
       {
-        name: `Last MRR game`,
-        value: RRchange,
-        inline: true,
-      },
-      {
-        name: `\u200B`,
-        value: `\u200B`,
-        inline: true,
-      },
-      {
         name: `Carrier`,
         value: `${emojis.loading} Loading MMR data...`,
-        inline: true,
-      },
-      {
-        name: `\u200B`,
-        value: `\u200B`,
-        inline: true,
-      },
-      {
-        name: `\u200B`,
-        value: `\u200B`,
         inline: true,
       },
     ])
@@ -314,12 +328,12 @@ async function createAccountEmbed(valorant, matchsMmrData) {
 }
 
 const handleError = async (interaction, error) => {
-  let errorMessage = `${emojis.error} An error occurred`;
+  let errorMessage = `${emojis.error} `;
   if (error.response && error.response.data) {
     const apiError = error.response.data.message || error.response.data.details;
-    errorMessage += `: ${apiError}`;
+    errorMessage += `${apiError}`;
   } else {
-    errorMessage += `: ${error.message}`;
+    errorMessage += `${error.message}`;
   }
   console.error(error);
   await interaction.editReply({
@@ -345,6 +359,42 @@ function addInlineFields(fieldsCount) {
   return fieldsArray;
 }
 
+function getRandomNumber(min, max) {
+  return Math.floor(Math.random() * (max - min + 1)) + min;
+}
+
+const handleCarrierMatchError = async (
+  interaction,
+  embed,
+  message,
+  selectMenu,
+  error,
+  errorStr,
+  i
+) => {
+  console.error(error);
+  // Gérez ici le cas où le timeout est dépassé ou une autre erreur survient
+  const oldEmbed = message?.embeds[0];
+  const name = oldEmbed?.fields[i]?.name || `Match ${i + 1}`;
+  const value = `\`\`\`ansi\n\u001b[31m${errorStr}\`\`\``;
+
+  const option = new StringSelectMenuOptionBuilder()
+    .setLabel(errorStr)
+    .setEmoji(assets.rounds.status.undefined) // Assurez-vous que `assets.rounds.status.undefined` est défini
+    .setValue(`${i}-error`);
+  selectMenu.addOptions(option);
+
+  embed.data.fields[i] = { name, value, inline: true };
+  await interaction
+    .editReply({
+      embeds: [embed],
+      components: [new ActionRowBuilder().addComponents(selectMenu)],
+    })
+    .catch();
+};
+
+const activeSearches = new Set();
+
 class Valorant {
   constructor(interaction, puuid) {
     this.interaction = interaction;
@@ -367,13 +417,51 @@ class Valorant {
   }
 
   async displayLast10Matches() {
-    await this.getValorantAccountSYSF(this.puuid);
+    const serverId = this.interaction.guildId;
 
+    // Tentative de début de recherche
+    const canSearch = this.startSearch(serverId);
+    if (!canSearch) {
+      const error = {
+        message:
+          "A search is already in progress on this server. Please wait until it is finished.",
+        code: 1,
+        type: "Throwed error",
+      };
+      await handleError(this.interaction, error);
+      return;
+    }
+
+    try {
+      // Votre méthode de recherche
+      await this._performSearch(this.interaction);
+    } catch (error) {
+      console.error("Error during the search:", error);
+      await handleError(this.interaction, error);
+    } finally {
+      // Nettoyage
+      this.endSearch(serverId);
+    }
+  }
+
+  startSearch(serverId) {
+    if (activeSearches.has(serverId)) {
+      return false;
+    }
+    activeSearches.add(serverId);
+    return true;
+  }
+
+  endSearch(serverId) {
+    activeSearches.delete(serverId);
+  }
+
+  async _performSearch() {
+    await this.getValorantAccountSYSF(this.puuid);
     const { interaction, valorant } = this;
 
     try {
       const valorantData = valorant?.data;
-
       let matchsMmr = await valorantAPI.getMMRHistoryByPUUID({
         region: valorantData.region,
         puuid: valorantData.puuid,
@@ -384,125 +472,101 @@ class Valorant {
       }
 
       const matchsMmrData = matchsMmr.data.slice(0, 9); // Limitez à 10 matchs
+      if (matchsMmrData.length === 0) throw new Error("No match to display");
       const embed = createInitialEmbed(valorant.data, matchsMmrData.length); // Créez l'embed initial avec les champs de chargement
       const message = await interaction.editReply({ embeds: [embed] }); // Envoyez l'embed initial
       const selectMenu = new StringSelectMenuBuilder()
         .setCustomId("display-the-matchid")
         .setMinValues(1)
         .setMaxValues(1)
-        .setPlaceholder("Select the match you want to diplay");
-      const errorCount = 0;
+        .setPlaceholder("Select the match you want to display");
+
+      const errorStr = "Error occurred during match retrieval";
 
       let wins = 0;
-      for (let i = 0; i < matchsMmrData.length; i++) {
-        await new Promise((resolve) => setTimeout(resolve, 750));
-        const match = matchsMmrData[i];
+      for (const [i, match] of matchsMmrData.entries()) {
+        await new Promise((resolve) =>
+          setTimeout(resolve, getRandomNumber(600, 1200))
+        );
+
+        let winPercentage;
 
         try {
           const getMatch = await Promise.race([
+            new Promise((_, reject) =>
+              setTimeout(() => reject(new Error("Timeout reached")), 5000)
+            ),
             valorantAPI.getMatch(match.match_id),
-            timeout(5000, "Error occurred during match retrieval"),
           ]);
+
           if (!getMatch || getMatch.status !== 200) {
-            continue; // Si la récupération du match échoue, passez au suivant
+            throw new Error("Failed to fetch match data");
           }
 
           const matchData = getMatch.data;
-          const playersData = matchData.players;
-          const { red = {}, blue = {} } = matchData.teams || {};
-          const puuid = valorantData.puuid;
-          const player = playersData.all_players.find((p) => p.puuid === puuid);
-          let status = null;
-          let playerTeam = player.team === "Blue" ? "blue" : "red";
-          let opponentTeam = player.team === "Blue" ? "red" : "blue";
-          let matchScore;
+          const player = matchData.players.all_players.find(
+            (p) => p.puuid === valorantData.puuid
+          );
 
-          if (player) {
-            playerTeam = player.team === "Blue" ? "blue" : "red";
-            opponentTeam = player.team === "Blue" ? "red" : "blue";
-            status = matchData.teams[playerTeam].has_won ? "win" : "loose";
+          if (!player) throw new Error("Player not found in match data");
 
-            const playerTeamScore = matchData.teams[playerTeam].rounds_won;
-            const opponentTeamScore = matchData.teams[opponentTeam].rounds_won;
-
-            matchScore = `${playerTeamScore} - ${opponentTeamScore}`;
-          }
-
-          const draw = red.has_won === false && blue.has_won === false;
+          const playerTeam = player.team === "Blue" ? "blue" : "red";
+          const opponentTeam = player.team === "Blue" ? "red" : "blue";
+          const matchScore = `${matchData.teams[playerTeam].rounds_won} - ${matchData.teams[opponentTeam].rounds_won}`;
+          const draw =
+            !matchData.teams.red.has_won && !matchData.teams.blue.has_won;
+          let status = matchData.teams[playerTeam].has_won ? "win" : "loose";
           status = winEmojis(status, draw);
 
-          if (status === "win") {
-            wins++;
-          }
+          if (status === "win") wins++;
 
-          let name;
-          let value;
-
-          try {
-            const { nameStr, valueStr, option } = carrierMatchField(
-              player,
-              status,
-              matchData,
-              matchScore
-            );
-            name = nameStr;
-            value = valueStr;
-            selectMenu.addOptions(option);
-          } catch (error) {
-            const oldEmbed = message?.embeds[0];
-            const errorStr = "Error occurred during match retrieval";
-            name = oldEmbed?.fields[i]?.name || errorStr;
-            value = `\`\`\`ansi\n\u001b[31m${errorStr}\`\`\``;
-            console.error(error);
-
-            const option = new StringSelectMenuOptionBuilder()
-              .setLabel(errorStr)
-              .setEmoji(assets.rounds.status.undefined)
-              .setValue(`${errorCount}-error`);
-            selectMenu.addOptions(option);
-            errorCount++;
-          }
-
-          embed.data.fields[i].name = name;
-          embed.data.fields[i].value = value;
-
-          let winPercentage =
-            i + 1 > 0 ? Math.round((wins / (i + 1)) * 100) : 0;
-          embed.setDescription(
-            `## ${emojis.info} Fetched User carrier of \`${valorant.data.name}#${valorant.data.tag}\`\n\`\`\`ansi\n\u001b[33mWinrate: ${winPercentage}%\`\`\`\n`
-            //`You can use the select menu to display a match ID`
+          const { nameStr, valueStr, option } = carrierMatchField(
+            player,
+            status,
+            matchData,
+            matchScore
           );
-          await interaction
-            .editReply({
-              embeds: [embed],
-              components: [new ActionRowBuilder().addComponents(selectMenu)],
-            })
-            .catch();
-        } catch (error) {
-          console.error(error);
-          // Gérez ici le cas où le timeout est dépassé ou une autre erreur survient
-          const oldEmbed = message?.embeds[0];
-          const errorStr = error.message; // Utilisez le message d'erreur de la fonction timeout ou une autre erreur attrapée
-          const name = oldEmbed?.fields[i]?.name || `Match ${i + 1}`;
-          const value = `\`\`\`ansi\n\u001b[31m${errorStr}\`\`\``;
 
-          const option = new StringSelectMenuOptionBuilder()
-            .setLabel(errorStr)
-            .setEmoji(assets.rounds.status.undefined) // Assurez-vous que `assets.rounds.status.undefined` est défini
-            .setValue(`${i}-error`);
+          embed.data.fields[i] = {
+            name: nameStr,
+            value: valueStr,
+            inline: true,
+          };
+
           selectMenu.addOptions(option);
-
-          embed.data.fields[i] = { name, value, inline: true };
-          await interaction
-            .editReply({
-              embeds: [embed],
-              components: [new ActionRowBuilder().addComponents(selectMenu)],
-            })
-            .catch();
+          winPercentage = Math.round((wins / (i + 1)) * 100);
+        } catch (error) {
+          await handleCarrierMatchError(
+            interaction,
+            embed,
+            message,
+            selectMenu,
+            error,
+            errorStr,
+            i
+          );
+          winPercentage = -999;
         }
+        embed.setDescription(
+          `## ${emojis.info} Fetched User carrier of \`${valorant.data.name}#${
+            valorant.data.tag
+          }\`\n\`\`\`ansi\n\u001b[35mWinrate: ${
+            winPercentage >= 0
+              ? `${winPercentage}%`
+              : "The win rate cannot be calculated!"
+          }\`\`\``
+        );
+
+        await interaction
+          .editReply({
+            embeds: [embed],
+            components: [new ActionRowBuilder().addComponents(selectMenu)],
+          })
+          .catch(() => {});
       }
-    } catch (e) {
-      await handleError(interaction, e);
+    } catch (error) {
+      console.error("Error handling the displayLast10Matches function:", error);
+      await handleError(interaction, error);
     }
   }
 
@@ -541,7 +605,7 @@ class Valorant {
       const carrierEmbedStr =
         carrierList === "No mmr data available"
           ? carrierList
-          : `${carrierList}\n\`\`\`ansi\n\u001b[33m${winPercentage}% of winrate\`\`\``;
+          : `${carrierList}\n\`\`\`ansi\n\u001b[35m${winPercentage}% of winrate\`\`\``;
 
       // Crée un nouveau Embed en utilisant les données de l'ancien embed et en ajoutant les nouvelles informations
       const oldEmbed = message.embeds[0];
@@ -560,26 +624,26 @@ class Valorant {
             value: oldEmbed.fields[1].value,
             inline: oldEmbed.fields[1].inline,
           },
+          // {
+          //   name: oldEmbed.fields[2].name,
+          //   value: oldEmbed.fields[2].value,
+          //   inline: oldEmbed.fields[2].inline,
+          // },
           {
             name: oldEmbed.fields[2].name,
-            value: oldEmbed.fields[2].value,
+            value: carrierEmbedStr,
             inline: oldEmbed.fields[2].inline,
           },
-          {
-            name: oldEmbed.fields[3].name,
-            value: carrierEmbedStr,
-            inline: oldEmbed.fields[3].inline,
-          },
-          {
-            name: oldEmbed.fields[4].name,
-            value: oldEmbed.fields[4].value,
-            inline: oldEmbed.fields[4].inline,
-          },
-          {
-            name: oldEmbed.fields[5].name,
-            value: oldEmbed.fields[5].value,
-            inline: oldEmbed.fields[5].inline,
-          },
+          // {
+          //   name: oldEmbed.fields[4].name,
+          //   value: oldEmbed.fields[4].value,
+          //   inline: oldEmbed.fields[4].inline,
+          // },
+          // {
+          //   name: oldEmbed.fields[5].name,
+          //   value: oldEmbed.fields[5].value,
+          //   inline: oldEmbed.fields[5].inline,
+          // },
         ])
         .setColor(oldEmbed.color);
 

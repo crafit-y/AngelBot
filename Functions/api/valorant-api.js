@@ -3,7 +3,7 @@ const GenericAPIClient = require("../client/GenericAPIClient");
 module.exports = class ValorantAPIClient extends GenericAPIClient {
   constructor(token) {
     super("https://api.henrikdev.xyz", {
-      Authorization: token ? `Bearer ${token}` : undefined,
+      Authorization: token ? token : undefined,
       "User-Agent": "unofficial-valorant-api/node.js",
     });
   }

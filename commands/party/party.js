@@ -12,6 +12,7 @@ const {
 const {
   disconnectAllUsers,
 } = require("../../functions/party/disconnectAllUsers");
+const ValorantAccount = require("../../schemas/AccountSchema");
 const { updateUsersTeam } = require("../../functions/party/updateUsersTeam.js");
 const { getAllTheTeam } = require("../../functions/party/getAllTheTeam");
 const { partyManager } = require("../../functions/fs/PartyManager.js");
@@ -20,9 +21,12 @@ const { liveManager } = require("../../functions/fs/LiveManager.js");
 const { teamManager } = require("../../functions/fs/TeamManager.js");
 const { PlayASound } = require("../../functions/all/PlayASound.js");
 const { Webhook } = require("../../functions/all/WebHooks.js");
+const UserManager = require("../../functions/utils/UserManager.js");
 
 const emojis = require("../../utils/emojis.json");
 const IDS = require("../../utils/ids.json");
+const ValorantAPIClient = require("../../functions/api/valorant-api");
+const valorantAPI = new ValorantAPIClient(process.env.HENRIK_API_KEY);
 
 async function Notify(client, logChannel, member, message) {
   await Webhook.send(
@@ -32,6 +36,17 @@ async function Notify(client, logChannel, member, message) {
     null,
     [await createEmbed.log(member, message)]
   );
+}
+
+async function NoPartyCreated(interaction) {
+  await interaction.editReply({
+    embeds: [
+      await createEmbed.embed(
+        `${emojis.error} The party is not created, you can't modify it!`,
+        Colors.Red
+      ),
+    ],
+  });
 }
 
 async function delay(ms) {
@@ -53,6 +68,21 @@ async function moveUsersToTeamVoiceChannels(client, teams, channelIDs) {
     );
   }
   return actions.join("\n").replaceAll(",", "");
+}
+
+async function fetchValorantAccount(puuid) {
+  for (let i = 0; i < 3; i++) {
+    // Tentatives jusqu'à 3 fois
+    try {
+      const response = await valorantAPI.getAccount({ name: "Crafity", tag: "007" });
+      if (response.status === 200) return response; // Succès
+      console.error(`Tentative ${i + 1}: Échec avec statut ${response.status}`);
+    } catch (error) {
+      console.error(`Tentative ${i + 1}: Erreur lors de la requête API`, error);
+    }
+    await delay(2000); // Attendre 2 secondes avant de réessayer
+  }
+  return null; // Retourner null après 3 échecs
 }
 
 module.exports = {
@@ -120,6 +150,23 @@ module.exports = {
           description: "Select the user to check your team",
           type: ApplicationCommandOptionType.User,
           required: true,
+        },
+      ],
+    },
+    {
+      name: "rename_team",
+      description: "To find out which team you're in",
+      type: ApplicationCommandOptionType.Subcommand,
+      options: [
+        {
+          name: "team",
+          description: "Select the team to update",
+          type: ApplicationCommandOptionType.String,
+          required: true,
+          choices: [
+            { name: "Team 1", value: "1" },
+            { name: "Team 2", value: "2" },
+          ],
         },
       ],
     },
@@ -220,14 +267,7 @@ module.exports = {
 
       case "start":
         if (!party) {
-          await interaction.editReply({
-            embeds: [
-              await createEmbed.embed(
-                `${emojis.error} The party is not created, you can't modify it!`,
-                Colors.Red
-              ),
-            ],
-          });
+          return await NoPartyCreated(interaction);
         } else if (!isOnLive && party) {
           await PlayASound.anExistingFile(client, "GameStart").catch(() => {});
           await liveManager.setStatus(true);
@@ -274,14 +314,7 @@ module.exports = {
 
       case "update_teams":
         if (!party) {
-          await interaction.editReply({
-            embeds: [
-              await createEmbed.embed(
-                `${emojis.error} The party is not created, you can't modify it!`,
-                Colors.Red
-              ),
-            ],
-          });
+          return await NoPartyCreated(interaction);
         } else {
           try {
             if (!(await teamManager.fileExists())) {
@@ -320,14 +353,7 @@ module.exports = {
 
       case "end":
         if (!party) {
-          await interaction.editReply({
-            embeds: [
-              await createEmbed.embed(
-                `${emojis.error} The party is not created, you can't modify it!`,
-                Colors.Red
-              ),
-            ],
-          });
+          return await NoPartyCreated(interaction);
         } else if (isOnLive && party) {
           await PlayASound.anExistingFile(client, "GameEnd").catch(() => {});
           await liveManager.setStatus(false);
@@ -483,16 +509,88 @@ module.exports = {
 
       case "get_team":
         if (!party) {
-          await interaction.editReply({
-            embeds: [
-              await createEmbed.embed(
-                `${emojis.error} The party is not created, you can't modify it!`,
-                Colors.Red
-              ),
-            ],
-          });
+          return await NoPartyCreated(interaction);
         } else {
           await updateUsersTeam(client, interaction, team);
+        }
+        break;
+
+      case "rename_team":
+        if (!party) {
+          console.log("Aucune party n'a été créée.");
+          return await NoPartyCreated(interaction);
+        } else {
+          console.log("Party détectée, début du traitement.");
+          let actions = [];
+          const teamStr = await getAllTheTeam(team);
+          const uniqueUsers = new Set(teamStr); // Éviter les traitements redondants
+          console.log(
+            "Membres de l'équipe récupérés et filtrés pour l'unicité:",
+            Array.from(uniqueUsers)
+          );
+
+          // Création d'une instance unique de UserManager
+          const userManager = new UserManager();
+          console.log("Instance de UserManager créée.");
+
+          // Changement des pseudos en utilisant ValorantAPI et discord.js
+          for (const user of uniqueUsers) {
+            console.log(`Traitement de l'utilisateur ${user}.`);
+            await delay(1000); // Délai pour éviter le rate limiting
+            try {
+              const accounts = await ValorantAccount.find({ discordId: user });
+              console.log(
+                `Comptes trouvés pour l'utilisateur ${user}:`,
+                accounts
+              );
+              if (accounts.length > 0) {
+                const member = await guild.members.fetch(user);
+                console.log(
+                  `Membre Discord récupéré pour l'utilisateur ${user}: ${member.displayName}`
+                );
+                const newName = await fetchValorantAccount(
+                  accounts[0].valorantAccount
+                );
+                if (newName) {
+                  await userManager.changeNickname(member, newName);
+                  console.log(
+                    `Pseudo changé pour ${member.displayName} à ${newName}`
+                  );
+                } else {
+                  console.log(
+                    `Impossible de récupérer un nouveau nom pour ${user} après plusieurs tentatives.`
+                  );
+                }
+              }
+            } catch (error) {
+              console.error(
+                `Erreur lors de la modification du pseudo pour l'utilisateur ${user}:`,
+                error
+              );
+            }
+          }
+
+          // Réinitialisation des pseudos
+          console.log(
+            "Début de la réinitialisation des pseudos après 10 secondes de délai."
+          );
+          await delay(10000); // Délai global avant de réinitialiser
+          for (const user of uniqueUsers) {
+            console.log(
+              `Réinitialisation du pseudo pour l'utilisateur ${user}.`
+            );
+            await delay(1000);
+            try {
+              const member = await guild.members.fetch(user);
+              await userManager.resetNicknames(member);
+              console.log(`Pseudo réinitialisé pour ${member.displayName}`);
+            } catch (error) {
+              console.error(
+                `Erreur lors de la réinitialisation du pseudo pour l'utilisateur ${user}:`,
+                error
+              );
+            }
+          }
         }
         break;
     }

@@ -2,10 +2,9 @@ const { EmbedBuilder, Colors, AttachmentBuilder } = require("discord.js");
 const path = require("path");
 
 const ValorantAPIClient = require("../api/valorant-api");
-const valorantAPI = new ValorantAPIClient("");
+const valorantAPI = new ValorantAPIClient(process.env.HENRIK_API_KEY);
 
 const PartyEmojiManager = require("./PartyEmojiManager");
-const partyEmojiManager = new PartyEmojiManager();
 
 const { createEmbed } = require("../all/Embeds");
 const assets = require("../../utils/valorant/assets.json");
@@ -55,14 +54,14 @@ function calculateKDA(kills, deaths, assists) {
 let highestScore = 0;
 let bestPlayerName = "";
 
-function generatePlayerFields(player) {
+function generatePlayerFields(player, emojiManager) {
   const { name, tag, team, party_id, character, stats, currenttier_patched } =
     player;
   const { kills, deaths, assists, headshots, score } = stats;
 
   const agentEmoji =
     assets.agentEmojis[character]?.emoji || ":white_small_square:";
-  const partyEmoji = partyEmojiManager.getEmojiForPartyId(player.party_id);
+  const partyEmoji = emojiManager.getEmojiForPartyId(player.party_id);
 
   const isBestPlayer = player.name === bestPlayerName;
   const bestPlayerEmoji = isBestPlayer ? assets.ranks.Mvp.emoji : ""; // Utilisez l'emoji de votre choix
@@ -127,7 +126,7 @@ function addInlineFields(fields) {
   return fields;
 }
 
-function createRoundStrings(rounds, assets) {
+function createRoundStrings(rounds, assets, gamemode) {
   let normalRoundsStr = "";
   let overTimeStr = "";
   let overtimeEmojiCount = 0;
@@ -149,7 +148,17 @@ function createRoundStrings(rounds, assets) {
 
     const roundSymbol = assets.rounds[team][winCondition];
 
-    if (index === 12) normalRoundsStr += " / ";
+    switch (gamemode) {
+      case "Swiftplay":
+        if (index === 5) normalRoundsStr += " / ";
+        break;
+      case "Spike Rush":
+        if (index === 4) normalRoundsStr += " / ";
+        break;
+      default:
+        if (index === 12) normalRoundsStr += " / ";
+        break;
+    }
 
     if (index < 24) {
       normalRoundsStr += roundSymbol; // Ajoute simplement les symboles sans séparateur
@@ -204,15 +213,16 @@ function createRoundStrings(rounds, assets) {
 }
 
 class MatchEmbed {
-  constructor(interaction, puuid) {
+  constructor(interaction, puuid, region) {
     this.interaction = interaction;
     this.puuid = puuid;
+    this.region = region;
     this.matchId;
   }
 
   async getLastMatch() {
     const matches = await valorantAPI.getMatchesByPUUID({
-      region: "eu",
+      region: this.region,
       puuid: this.puuid,
     });
     this.matchId = matches.data[0].metadata.matchid;
@@ -226,7 +236,7 @@ class MatchEmbed {
     const declaredPuuid = await this.puuid;
     const mmrResponse = await valorantAPI.getMMRByPUUID({
       version: "v1",
-      region: "eu",
+      region: this.region,
       puuid: declaredPuuid,
     });
 
@@ -313,9 +323,11 @@ class MatchEmbed {
         return acc;
       }, {});
 
+      let emojiManager = new PartyEmojiManager();
+
       const partyList = Object.keys(partys)
         .map((partyId, index) => {
-          const partyEmoji = partyEmojiManager.getEmojiForPartyId(partyId);
+          const partyEmoji = emojiManager.getEmojiForPartyId(partyId);
           return `${partyEmoji} Party ${index + 1}`;
         })
         .reduce((acc, item, index) => {
@@ -335,24 +347,26 @@ class MatchEmbed {
 
       switch (mode) {
         case "Deathmatch":
-          const players = sortPlayersByScore(playersData.all_players);
+          const players = sortPlayersByScore(playersData.all_players).map((p) =>
+            generatePlayerFields(p, emojiManager)
+          );
+          const playersFields = addInlineFields(players);
           matchEmbed.addFields([
             {
               name: `Players list:`,
               value: "\u200B",
             },
-            ...players.map(generatePlayerFields),
-            { name: "\u200B", value: "\u200B", inline: true }, // Spacer
           ]);
+          matchEmbed.addFields(playersFields);
           break;
 
         default:
           const redTeamPlayers = await sortPlayersByScore(playersData.red).map(
-            generatePlayerFields
+            (p) => generatePlayerFields(p, emojiManager)
           );
           const blueTeamPlayers = await sortPlayersByScore(
             playersData.blue
-          ).map(generatePlayerFields);
+          ).map((p) => generatePlayerFields(p, emojiManager));
 
           const redTeamFields = addInlineFields(redTeamPlayers);
           const blueTeamFields = addInlineFields(blueTeamPlayers);
@@ -361,7 +375,11 @@ class MatchEmbed {
             {
               name: `${assets.teams.red.emoji} | Red Team ${emojis.arrow} ${
                 red.rounds_won
-              } Round${red.rounds_won > 1 ? "s" : ""} win ${
+              } ${
+                mode != "Team Deathmatch"
+                  ? `Round${red.rounds_won > 1 ? "s" : ""} win`
+                  : `Point${red.rounds_won > 1 ? "s" : ""}`
+              } ${
                 draw
                   ? emojis.leaderboard
                   : red.has_won
@@ -379,7 +397,11 @@ class MatchEmbed {
             {
               name: `${assets.teams.blue.emoji} | Blue Team ${emojis.arrow} ${
                 blue.rounds_won
-              } Round${blue.rounds_won > 1 ? "s" : ""} win ${
+              } ${
+                mode != "Team Deathmatch"
+                  ? `Round${red.rounds_won > 1 ? "s" : ""} win`
+                  : `Point${red.rounds_won > 1 ? "s" : ""}`
+              } ${
                 draw
                   ? emojis.leaderboard
                   : blue.has_won
@@ -391,10 +413,21 @@ class MatchEmbed {
           ]);
 
           matchEmbed.addFields(blueTeamFields);
+          break;
+      }
 
+      switch (mode) {
+        case "Deathmatch":
+          break;
+        case "Escalation":
+          break;
+        case "Team Deathmatch":
+          break;
+        default:
           const { normalRoundsStr, overTimeStr } = createRoundStrings(
             matchData.rounds,
-            assets
+            assets,
+            mode
           );
 
           matchEmbed.addFields([
@@ -476,11 +509,11 @@ class MatchEmbed {
       const imageName =
         mode != "Deathmatch"
           ? status != null
-            ? status === "win"
+            ? draw
+              ? "imgDraw"
+              : status === "win"
               ? "imgWon"
               : "imgLost"
-            : draw
-            ? "imgDraw"
             : "name"
           : "name";
 

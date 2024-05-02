@@ -12,7 +12,7 @@ class Sanction {
     this.reason = reason;
     this.formattedReason = `${mod.displayName} (@${
       mod.username
-    }) | ${prefix} - ${this.formatSanctionString(sanction)} | ${reason}`;
+    }) | ${prefix} - ${this.formatActionString(sanction)} | ${reason}`;
     this.guild = guild;
     this.duration = duration;
   }
@@ -47,25 +47,44 @@ class Sanction {
       .replace(/,\s*$/, "");
   }
 
+  // const formatted = string.match(/^un/) ? `Un-${string.slice(2)}` : string;
+  // return (
+  //   formatted.charAt(0).toUpperCase() +
+  //   formatted
+  //     .slice(1)
+  //     .replace(/(ban|unban)$/, "$1ned")
+  //     .replace(/kick$/, "ked")
+  // );
   formatSanctionString(string) {
-    const formatted = string.match(/^un/) ? `Un-${string.slice(2)}` : string;
-    return (
-      formatted.charAt(0).toUpperCase() +
-      formatted
-        .slice(1)
-        .replace(/(ban|unban)$/, "$1ned")
-        .replace(/kick$/, "ked")
-    );
+    return string
+      .replaceAll(/\buntimeout\b/g, "un-timed-out")
+      .replaceAll(/\btimeout\b/g, "timed-out")
+      .replaceAll(/\bunban\b/g, "un-banned")
+      .replaceAll(/\bban\b/g, "banned")
+      .replaceAll(/\bkick\b/g, "kicked");
+  }
+
+  formatActionString(string) {
+    return string
+      .replaceAll(/\buntimeout\b/g, "Remove Time-out")
+      .replaceAll(/\btimeout\b/g, "Apply Time-out")
+      .replaceAll(/\bunban\b/g, "Unban User")
+      .replaceAll(/\bban\b/g, "Ban User")
+      .replaceAll(/\bkick\b/g, "Kick User");
   }
 
   async perform() {
-    const { member, formattedReason, sanction, guild, duration } = this; // Déstructuration pour simplifier
+    const { member, formattedReason, sanction, guild, duration, sendToUserDM } =
+      this; // Déstructuration pour simplifier
     try {
       switch (sanction) {
         case "timeout":
           await member.timeout(
             duration * 1000,
-            formattedReason + " ${emojis.arrow} Timed-out for " + this.formatTime(duration)
+            formattedReason +
+              emojis.arrow +
+              " Timed-out for " +
+              this.formatTime(duration)
           );
           return true;
         case "untimeout":
@@ -94,6 +113,7 @@ class Sanction {
           throw new Error(`Sanction type "${sanction}" is not supported.`);
       }
     } catch (err) {
+      console.error(err);
       return `${error} I can't perform the action ${sanction} on ${member}! Error: ${err.message}`;
     }
   }
@@ -113,19 +133,15 @@ class Sanction {
               sanction !== "unban"
                 ? `${member} \`(@${member.user.username})\``
                 : `<@${member}>`
-            } has been **${
-              sanction != "timeout" && sanction != "untimeout"
-                ? this.formatSanctionString(sanction)
-                : sanction != "untimeout"
-                ? "Timed-out"
-                : "Un-timed-out"
-            }!**\n${actionDescription.join("\n")}`
+            } has been **${this.formatSanctionString(
+              sanction
+            )}!**\n${actionDescription.join("\n")}`
           )
           .setColor(Colors.Purple)
           .setAuthor({
-            name: `Sanction ${emojis.arrow} ${this.formatSanctionString(sanction)
-              .replace("ned", "")
-              .replace("ed", "")}`,
+            name: `Sanction ${emojis.arrow} ${this.formatActionString(
+              sanction
+            )}`,
             iconURL: guild.iconURL(),
           }),
       ],

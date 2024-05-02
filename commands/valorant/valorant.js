@@ -9,7 +9,7 @@ const assets = require("../../utils/valorant/assets.json");
 const { createEmbed } = require("../../functions/all/Embeds");
 const ValorantAccount = require("../../schemas/AccountSchema");
 const ValorantAPIClient = require("../../functions/api/valorant-api");
-const valorantAPI = new ValorantAPIClient("");
+const valorantAPI = new ValorantAPIClient(process.env.HENRIK_API_KEY);
 const MatchEmbed = require("../../functions/valorant/MatchEmbed");
 const emojis = require("../../utils/emojis.json");
 const Valorant = require("../../functions/valorant/Valorant");
@@ -295,7 +295,8 @@ async function linkCommand(interaction, user, playerTag) {
   }
 
   // Fetch and link account details
-  const valorantData = await fetchValorantAccountDetails(playerTag);
+  const valorant = await fetchValorantAccountDetails(playerTag);
+  const valorantData = valorant.data;
   const mmrData = await updateLinkedAccount(user, valorantData);
 
   // Create and send the embed
@@ -328,14 +329,17 @@ async function viewMatchCommand(interaction, matchIdString) {
 
 async function getPuuid(accounts, playerTag) {
   let puuid;
+  let region;
   let declared = false;
 
   if (playerTag && playerTag !== undefined) {
     const player = await fetchValorantAccountDetails(playerTag);
     puuid = player.data.puuid;
+    region = player.data.region;
     declared = true;
   } else {
     puuid = accounts[0].valorantAccount;
+    region = accounts[0]?.region || "eu";
   }
 
   if (accounts.length === 0 && !declared) {
@@ -343,18 +347,18 @@ async function getPuuid(accounts, playerTag) {
       `No Valorant account linked.\nUse the ${commandId} \`valorant-tag: YourValorantUserName#YourValorantTag\` to connect an account.`
     );
   }
-  return puuid;
+  return { puuid: puuid, region: region };
 }
 
 async function myAccountCommand(interaction, accounts, playerTag) {
-  const puuid = await getPuuid(accounts, playerTag);
+  const { puuid } = await getPuuid(accounts, playerTag);
   const valorant = new Valorant(interaction, puuid);
   valorant.getValorantAccountInfos();
 }
 
 async function lastMatchCommand(interaction, accounts, playerTag) {
-  const puuid = await getPuuid(accounts, playerTag);
-  const MatchUtil = new MatchEmbed(interaction, puuid);
+  const { puuid, region } = await getPuuid(accounts, playerTag);
+  const MatchUtil = new MatchEmbed(interaction, puuid, region);
   await MatchUtil.getLastMatch();
   await MatchUtil.generate();
 }

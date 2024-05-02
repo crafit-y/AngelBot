@@ -33,74 +33,102 @@
 
   "maps": {
     "Bind": {
-      "img": "/utils/valorant/assets/banners/BIND/1.png",
-      "name": "/utils/valorant/assets/banners/BIND/2.png",
-      "imgWon": "/utils/valorant/assets/banners/BIND/3.png",
-      "imgLost": "/utils/valorant/assets/banners/BIND/4.png",
-      "imgDraw": "/utils/valorant/assets/banners/BIND/5.png"
+      "img": "/utils/valorant/assets/banners/Bind/1.png",
+      "name": "/utils/valorant/assets/banners/Bind/2.png",
+      "imgWon": "/utils/valorant/assets/banners/Bind/3.png",
+      "imgLost": "/utils/valorant/assets/banners/Bind/4.png",
+      "imgDraw": "/utils/valorant/assets/banners/Bind/5.png"
     },
     "Split": {
-      "img": "/utils/valorant/assets/banners/SPLIT/1.png",
-      "name": "/utils/valorant/assets/banners/SPLIT/2.png",
-      "imgWon": "/utils/valorant/assets/banners/SPLIT/3.png",
-      "imgLost": "/utils/valorant/assets/banners/SPLIT/4.png",
-      "imgDraw": "/utils/valorant/assets/banners/SPLIT/5.png"
+      "img": "/utils/valorant/assets/banners/Split/1.png",
+      "name": "/utils/valorant/assets/banners/Split/2.png",
+      "imgWon": "/utils/valorant/assets/banners/Split/3.png",
+      "imgLost": "/utils/valorant/assets/banners/Split/4.png",
+      "imgDraw": "/utils/valorant/assets/banners/Split/5.png"
     },
     "Haven": {
-      "img": "/utils/valorant/assets/banners/HAVEN/1.png",
-      "name": "/utils/valorant/assets/banners/HAVEN/2.png",
-      "imgWon": "/utils/valorant/assets/banners/HAVEN/3.png",
-      "imgLost": "/utils/valorant/assets/banners/HAVEN/4.png",
-      "imgDraw": "/utils/valorant/assets/banners/HAVEN/5.png"
+      "img": "/utils/valorant/assets/banners/Haven/1.png",
+      "name": "/utils/valorant/assets/banners/Haven/2.png",
+      "imgWon": "/utils/valorant/assets/banners/Haven/3.png",
+      "imgLost": "/utils/valorant/assets/banners/Haven/4.png",
+      "imgDraw": "/utils/valorant/assets/banners/Haven/5.png"
     },
     "Ascent": {
-      "img": "/utils/valorant/assets/banners/ASCENT/1.png",
-      "name": "/utils/valorant/assets/banners/ASCENT/2.png",
-      "imgWon": "/utils/valorant/assets/banners/ASCENT/3.png",
-      "imgLost": "/utils/valorant/assets/banners/ASCENT/4.png",
-      "imgDraw": "/utils/valorant/assets/banners/ASCENT/5.png"
+      "img": "/utils/valorant/assets/banners/Ascent/1.png",
+      "name": "/utils/valorant/assets/banners/Ascent/2.png",
+      "imgWon": "/utils/valorant/assets/banners/Ascent/3.png",
+      "imgLost": "/utils/valorant/assets/banners/Ascent/4.png",
+      "imgDraw": "/utils/valorant/assets/banners/Ascent/5.png"
     },
     "Icebox": {
-      "img": "/utils/valorant/assets/banners/ICEBOX/1.png",
-      "name": "/utils/valorant/assets/banners/ICEBOX/2.png",
-      "imgWon": "/utils/valorant/assets/banners/ICEBOX/3.png",
-      "imgLost": "/utils/valorant/assets/banners/ICEBOX/4.png",
-      "imgDraw": "/utils/valorant/assets/banners/ICEBOX/5.png"
+      "img": "/utils/valorant/assets/banners/Icebox/1.png",
+      "name": "/utils/valorant/assets/banners/Icebox/2.png",
+      "imgWon": "/utils/valorant/assets/banners/Icebox/3.png",
+      "imgLost": "/utils/valorant/assets/banners/Icebox/4.png",
+      "imgDraw": "/utils/valorant/assets/banners/Icebox/5.png"
     },
     "Breeze": {
-      "img": "/utils/valorant/assets/banners/BREEZE/1.png",
-      "name": "/utils/valorant/assets/banners/BREEZE/2.png",
-      "imgWon": "/utils/valorant/assets/banners/BREEZE/3.png",
-      "imgLost": "/utils/valorant/assets/banners/BREEZE/4.png",
-      "imgDraw": "/utils/valorant/assets/banners/BREEZE/5.png"
+      "img": "/utils/valorant/assets/banners/Breeze/1.png",
+      "name": "/utils/valorant/assets/banners/Breeze/2.png",
+      "imgWon": "/utils/valorant/assets/banners/Breeze/3.png",
+      "imgLost": "/utils/valorant/assets/banners/Breeze/4.png",
+      "imgDraw": "/utils/valorant/assets/banners/Breeze/5.png"
     },
     "Fracture": {
-      "img": "/utils/valorant/assets/banners/FRACTURE/1.png",
-      "name": "/utils/valorant/assets/banners/FRACTURE/2.png",
-      "imgWon": "/utils/valorant/assets/banners/FRACTURE/3.png",
-      "imgLost": "/utils/valorant/assets/banners/FRACTURE/4.png",
-      "imgDraw": "/utils/valorant/assets/banners/FRACTURE/5.png"
+      "img": "/utils/valorant/assets/banners/Fracture/1.png",
+      "name": "/utils/valorant/assets/banners/Fracture/2.png",
+      "imgWon": "/utils/valorant/assets/banners/Fracture/3.png",
+      "imgLost": "/utils/valorant/assets/banners/Fracture/4.png",
+      "imgDraw": "/utils/valorant/assets/banners/Fracture/5.png"
     },
     "Lotus": {
-      "img": "/utils/valorant/assets/banners/LOTUS/1.png",
-      "name": "/utils/valorant/assets/banners/LOTUS/2.png",
-      "imgWon": "/utils/valorant/assets/banners/LOTUS/3.png",
-      "imgLost": "/utils/valorant/assets/banners/LOTUS/4.png",
-      "imgDraw": "/utils/valorant/assets/banners/LOTUS/5.png"
+      "img": "/utils/valorant/assets/banners/Lotus/1.png",
+      "name": "/utils/valorant/assets/banners/Lotus/2.png",
+      "imgWon": "/utils/valorant/assets/banners/Lotus/3.png",
+      "imgLost": "/utils/valorant/assets/banners/Lotus/4.png",
+      "imgDraw": "/utils/valorant/assets/banners/Lotus/5.png"
     },
     "Pearl": {
-      "img": "/utils/valorant/assets/banners/PEARL/1.png",
-      "name": "/utils/valorant/assets/banners/PEARL/2.png",
-      "imgWon": "/utils/valorant/assets/banners/PEARL/3.png",
-      "imgLost": "/utils/valorant/assets/banners/PEARL/4.png",
-      "imgDraw": "/utils/valorant/assets/banners/PEARL/5.png"
+      "img": "/utils/valorant/assets/banners/Pearl/1.png",
+      "name": "/utils/valorant/assets/banners/Pearl/2.png",
+      "imgWon": "/utils/valorant/assets/banners/Pearl/3.png",
+      "imgLost": "/utils/valorant/assets/banners/Pearl/4.png",
+      "imgDraw": "/utils/valorant/assets/banners/Pearl/5.png"
     },
     "Sunset": {
-      "img": "/utils/valorant/assets/banners/SUNSET/1.png",
-      "name": "/utils/valorant/assets/banners/SUNSET/2.png",
-      "imgWon": "/utils/valorant/assets/banners/SUNSET/3.png",
-      "imgLost": "/utils/valorant/assets/banners/SUNSET/4.png",
-      "imgDraw": "/utils/valorant/assets/banners/SUNSET/5.png"
+      "img": "/utils/valorant/assets/banners/Sunset/1.png",
+      "name": "/utils/valorant/assets/banners/Sunset/2.png",
+      "imgWon": "/utils/valorant/assets/banners/Sunset/3.png",
+      "imgLost": "/utils/valorant/assets/banners/Sunset/4.png",
+      "imgDraw": "/utils/valorant/assets/banners/Sunset/5.png"
+    },
+    "Piazza": {
+      "img": "/utils/valorant/assets/banners/Piazza/1.png",
+      "name": "/utils/valorant/assets/banners/Piazza/2.png",
+      "imgWon": "/utils/valorant/assets/banners/Piazza/3.png",
+      "imgLost": "/utils/valorant/assets/banners/Piazza/4.png",
+      "imgDraw": "/utils/valorant/assets/banners/Piazza/5.png"
+    },
+    "District": {
+      "img": "/utils/valorant/assets/banners/District/1.png",
+      "name": "/utils/valorant/assets/banners/District/2.png",
+      "imgWon": "/utils/valorant/assets/banners/District/3.png",
+      "imgLost": "/utils/valorant/assets/banners/District/4.png",
+      "imgDraw": "/utils/valorant/assets/banners/District/5.png"
+    },
+    "Kasbah": {
+      "img": "/utils/valorant/assets/banners/Kasbah/1.png",
+      "name": "/utils/valorant/assets/banners/Kasbah/2.png",
+      "imgWon": "/utils/valorant/assets/banners/Kasbah/3.png",
+      "imgLost": "/utils/valorant/assets/banners/Kasbah/4.png",
+      "imgDraw": "/utils/valorant/assets/banners/Kasbah/5.png"
+    },
+    "Drift": {
+      "img": "/utils/valorant/assets/banners/Drift/1.png",
+      "name": "/utils/valorant/assets/banners/Drift/2.png",
+      "imgWon": "/utils/valorant/assets/banners/Drift/3.png",
+      "imgLost": "/utils/valorant/assets/banners/Drift/4.png",
+      "imgDraw": "/utils/valorant/assets/banners/Drift/5.png"
     },
     "Unknown": {
       "name": "Unknown",
@@ -287,6 +315,14 @@
     },
     "Mvp": {
       "emoji": "<:star:1227744591650881649>"
+    },
+    "line": {
+      "red": {
+        "emoji": "<:red_line:1228763859402227823>"
+      },
+      "blue": {
+        "emoji": "<:blue_line:1228763861101052107>"
+      }
     }
   },
 

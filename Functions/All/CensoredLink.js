@@ -7,7 +7,7 @@ const IDS = require("../../utils/ids.json");
 
 const domainWhitelist = new Set(["youtube.com", "youtu.be", "tenor.com"]);
 const specialChars =
-  "!@#$%^&*()_+{}[]:\";'?><,./\\|~`ÀÁÂÆÇÈÉÊËÌÍÎÏÑÒÓÔŒÙÚÛÜÝŸæçìíîïñòóôœùúûüýÿß·’“”«»•–—±×÷²³€†‡";
+  "!@#$%^&*()_+{}[]:\";'?><,./\\|~ÀÁÂÆÇÈÉÊËÌÍÎÏÑÒÓÔŒÙÚÛÜÝŸæçìíîïñòóôœùúûüýÿß·’“”«»•–—±×÷²³€†‡";
 const linkRegex =
   /(https?:\/\/(?:www\.|(?!www))[a-zA-Z0-9][a-zA-Z0-9-]+[a-zA-Z0-9]\.[^\s]{2,}|www\.[a-zA-Z0-9][a-zA-Z0-9-]+[a-zA-Z0-9]\.[^\s]{2,}|https?:\/\/(?:www\.|(?!www))[a-zA-Z0-9]+\.[^\s]{2,}|www\.[a-zA-Z0-9]+\.[^\s]{2,})|(discord\.gg\/[^\s]+)|(gg\/[^\s]+)/g;
 
@@ -30,6 +30,7 @@ const CensoredLink = {
         });
 
         if (content !== message.content) {
+          await message.delete();
           const embed = await createEmbed.embed(
             `${emojis.error} Your [message](${message.url}) has a link, and can't be sent !`,
             Colors.Red
@@ -43,8 +44,15 @@ const CensoredLink = {
             null,
             message.attachments.map((attachment) => attachment.url)
           );
-          await message.reply({ embeds: [embed], ephemeral: true });
-          await message.delete();
+          // await message.reply({
+          //   embeds: [embed],
+          //   ephemeral: true,
+          // });
+          message.channel.send({
+            content: `${user}`,
+            embeds: [embed],
+            ephemeral: true,
+          });
 
           await Webhook.send(
             guild.channels.cache.get(IDS.CHANNELS.LOG),
@@ -100,7 +108,8 @@ function extractDomain(url) {
 
     return { domain, crypted };
   } catch (error) {
-    console.error("Error extracting domain:", error);
+    if (!error.message.includes("TypeError"))
+      console.error("Error extracting domain:", error);
     return { domain: "Unknown", crypted: "Unknown" };
   }
 }
