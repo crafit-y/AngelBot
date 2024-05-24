@@ -33,11 +33,84 @@ module.exports = {
       type: ApplicationCommandOptionType.Subcommand,
       options: [
         {
-          name: "link",
+          name: "link-or-name",
           description:
             "The name/link of a YouTube video or playlist, or a Discord interaction link with an audio attachment",
           type: ApplicationCommandOptionType.String,
           required: true,
+        },
+        {
+          name: "search-engine",
+          description:
+            "Select the search engine if u don't find the good thing",
+          type: ApplicationCommandOptionType.String,
+          required: false,
+          choices: [
+            {
+              name: `Auto (default)`,
+              value: "auto",
+            },
+            {
+              name: "YouTube",
+              value: "youtube",
+            },
+            {
+              name: "YouTube Playlist",
+              value: "youtubePlaylist",
+            },
+            {
+              name: "SoundCloud",
+              value: "soundcloud",
+            },
+            {
+              name: "SoundCloud Playlist",
+              value: "soundcloudPlaylist",
+            },
+            {
+              name: "Spotify",
+              value: "spotifySearch",
+            },
+            {
+              name: "Spotify Playlist",
+              value: "spotifyPlaylist",
+            },
+            {
+              name: "Facebook",
+              value: "facebook",
+            },
+            {
+              name: "Vimeo",
+              value: "vimeo",
+            },
+            {
+              name: "Arbitrary",
+              value: "arbitrary",
+            },
+            {
+              name: "Reverbnation",
+              value: "reverbnation",
+            },
+            {
+              name: "SoundCloud",
+              value: "soundcloudSearch",
+            },
+            {
+              name: "Apple Music",
+              value: "appleMusicSearch",
+            },
+            {
+              name: "Apple Music Playlist",
+              value: "appleMusicPlaylist",
+            },
+            {
+              name: "File",
+              value: "file",
+            },
+            {
+              name: "Auto Search",
+              value: "autoSearch",
+            },
+          ],
         },
       ],
     },
@@ -56,11 +129,26 @@ module.exports = {
               name: `${emojis["music-pause"]} ${emojis.arrow} Pause/Resume`,
               value: "pause-resume",
             },
-            { name: `${emojis["music-skip"]} ${emojis.arrow} Skip`, value: "skip" },
-            { name: `${emojis["music-back"]} ${emojis.arrow} Back`, value: "back" },
-            { name: `${emojis["music-loopQueue"]} ${emojis.arrow} Loop`, value: "loop" },
-            { name: `${emojis["music-stop"]} ${emojis.arrow} Stop`, value: "stop" },
-            { name: `${emojis["music-sound-max"]} ${emojis.arrow} Join`, value: "join" },
+            {
+              name: `${emojis["music-skip"]} ${emojis.arrow} Skip`,
+              value: "skip",
+            },
+            {
+              name: `${emojis["music-back"]} ${emojis.arrow} Back`,
+              value: "back",
+            },
+            {
+              name: `${emojis["music-loopQueue"]} ${emojis.arrow} Loop`,
+              value: "loop",
+            },
+            {
+              name: `${emojis["music-stop"]} ${emojis.arrow} Stop`,
+              value: "stop",
+            },
+            {
+              name: `${emojis["music-sound-max"]} ${emojis.arrow} Join`,
+              value: "join",
+            },
             {
               name: `${emojis["music-sound-muted"]} ${emojis.arrow} Disconnect`,
               value: "disconnect",
@@ -72,7 +160,7 @@ module.exports = {
           ],
         },
       ],
-    }
+    },
   ],
   run: async (client, interaction) => {
     const action = interaction.options.getSubcommand();
@@ -95,7 +183,7 @@ module.exports = {
 
 // Function to handle the "play" command
 async function handlePlayCommand(client, interaction, channel, queue) {
-  const link = interaction.options.getString("link");
+  const link = interaction.options.getString("link-or-name");
 
   if (!channel)
     return interaction.editReply("You are not connected to a voice channel!");
@@ -134,8 +222,25 @@ async function handlePlayCommand(client, interaction, channel, queue) {
       });
     }
 
+    async function getAudioUrlFromLink(link) {
+      const attachment = link.attachments.first();
+      if (!attachment) return null; //throw new Error("The Discord interaction does not contain an audio file attachment.");
+      return attachment.url;
+    }
+    handleOtherLink(
+      client,
+      channel,
+      interaction,
+      await getAudioUrlFromLink(targetMessage)
+    );
+
     // Handle the found Discord message
-    handleDiscordMessage(client, targetMessage, interaction, queue);
+    // handleDiscordMessage(
+    //   client,
+    //   getAudioUrlFromLink(targetMessage),
+    //   interaction,
+    //   queue
+    // );
   }
   // If it's neither a Discord message link nor a Discord message ID, handle the link as a regular URL
   else {
@@ -146,11 +251,10 @@ async function handlePlayCommand(client, interaction, channel, queue) {
 
 // Function to handle the found Discord message
 async function handleDiscordMessage(client, message, interaction, queue) {
-  if (queue) {
+  try {
     if (queue) {
       queue.delete();
     }
-
     // Define a callback function to handle messages
     async function handleMessage(message) {
       await interaction.editReply(message);
@@ -158,16 +262,22 @@ async function handleDiscordMessage(client, message, interaction, queue) {
 
     // Call the function to handle Discord link with the callback function
     await PlayASound.aDiscordLink(handleMessage, client, message, interaction);
+  } catch (e) {
+    console.error(e);
   }
 }
 
 // Function to handle other links
 async function handleOtherLink(client, channel, interaction, link) {
   // Handle the link as a normal URL for audio playback
+  const searchEngine = interaction.options.getString("search-engine");
   try {
     const player = client.player;
     const searchResult = await player
-      .search(link, { requestedBy: interaction.user })
+      .search(link, {
+        fallbackSearchEngine: searchEngine,
+        requestedBy: interaction.user,
+      })
       .catch(() => {});
 
     const connection = joinVoiceChannel({

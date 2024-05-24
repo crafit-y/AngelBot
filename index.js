@@ -6,7 +6,6 @@ dotenv.config();
 const Logger = require("./utils/Logger");
 process.env["NODE_TLS_REJECT_UNAUTHORIZED"] = 0;
 
-
 // Création d'une instance client avec les intents nécessaires
 const client = new Client({ intents: 3276799 });
 const player = new Player(client);
@@ -37,13 +36,13 @@ process.on("exit", (code) => {
 process.on("uncaughtException", (err, origin) => {
   Logger.error(`UNCAUGHT_EXCEPTION: ${err.message}`);
   console.log(`Stack: ${err.stack}`);
-  console.log(`Origin: ${origin}`);
+  console.log(origin);
 });
 
 // Gestion des rejets de promesse non gérés
 process.on("unhandledRejection", (reason, promise) => {
   Logger.warn(`UNHANDLED_REJECTION: ${reason.message}`);
-  console.log(`Promise: ${promise}`);
+  console.log(promise);
 });
 
 // Gestion des avertissements

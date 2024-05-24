@@ -24,25 +24,38 @@ module.exports = {
       const trackNum = i.values[0];
       const track = queue.tracks.data[trackNum - 1];
 
-      const Title = `**What do you want to do with the sound** \`${track.title.slice(
-        0,
-        50
-      )}\` **?**`;
+      const Title = `**What do you want to do with the sound:**\n> \`#${trackNum}\` - ${track.title} **?**`;
 
-      const action1 = new StringSelectMenuOptionBuilder()
-        .setLabel(`Skip to the sound`)
-        .setValue(`quikactionselectmenu-action-skipto`)
-        .setEmoji(emojis["music-skip"]);
-      const action2 = new StringSelectMenuOptionBuilder()
-        .setLabel(`Don't play this sound`)
-        .setValue(`quikactionselectmenu-action-noplay`)
-        .setEmoji(emojis.trash);
+      const quikActionOptions = [
+        {
+          label: "Play next",
+          value: "music-nextplay",
+          emoji: emojis["music-skip"],
+        },
+        {
+          label: "Skip to the sound",
+          value: "music-skipto",
+          emoji: emojis["music-resume"],
+        },
+        {
+          label: "Don't play this sound",
+          value: "music-noplay",
+          emoji: emojis.trash,
+        },
+      ];
+
+      const options = quikActionOptions.map((option) =>
+        new StringSelectMenuOptionBuilder()
+          .setLabel(option.label)
+          .setValue(option.value)
+          .setEmoji(option.emoji)
+      );
 
       const actionSL = new ActionRowBuilder().addComponents(
         new StringSelectMenuBuilder()
           .setPlaceholder("Quick action for a sound")
           .setCustomId("quikactionselectmenu-action")
-          .addOptions(action1, action2)
+          .addOptions(options)
           .setMinValues(1)
           .setMaxValues(1)
       );
@@ -86,21 +99,27 @@ module.exports = {
           let actionDescription = "";
 
           switch (i.values[0]) {
-            case "quikactionselectmenu-action-skipto":
+            case "music-nextplay":
+              queue.insertTrack(trackResolvable, 0);
+              actionDescription = `${emojis.success} The queue play to the sound on the next\n> \`${name}\``;
+              break;
+            case "music-skipto":
               queue.setRepeatMode(4);
               queue.node.skipTo(trackResolvable);
               actionDescription = `${emojis.success} The queue skipped to the sound\n> \`${name}\``;
               break;
-            case "quikactionselectmenu-action-noplay":
+            case "music-noplay":
               queue.node.remove(trackResolvable);
               actionDescription = `${emojis.success} The sound won't be played\n> \`${name}\``;
               break;
           }
-          queueEmbedManager.refreshEmbed();
-          interaction.followUp({
+
+          await message.delete().catch(() => {});
+          await interaction.followUp({
             embeds: [await createEmbed.embed(actionDescription)],
             ephemeral: true,
           });
+          await queueEmbedManager.refreshEmbed(interaction.message.id);
         }
       });
 

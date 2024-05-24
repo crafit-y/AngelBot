@@ -21,7 +21,7 @@ module.exports = {
       const queue = useQueue(interaction.guild.id);
       if (!queue) return;
 
-      queue.shuffle();
+      queue.enableShuffle(false);
 
       queueEmbedManager.refreshEmbed();
       interaction.followUp({

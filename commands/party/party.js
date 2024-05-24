@@ -229,7 +229,7 @@ module.exports = {
     switch (action.toLowerCase()) {
       case "create":
         if (!party) {
-          await PlayASound.anExistingFile(client, "GameStart").catch(() => {});
+          //await PlayASound.anExistingFile(client, "GameStart").catch(() => {});
           await partyManager.setCreated(true);
           await liveManager.setStatus(false);
           await category.permissionOverwrites.edit(IDS.OTHER_IDS.MEMBER_ROLE, {

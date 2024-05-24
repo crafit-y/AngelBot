@@ -327,13 +327,13 @@ async function createAccountEmbed(valorant, matchsMmrData) {
   return embed;
 }
 
-const handleError = async (interaction, error) => {
+const handleError = async (interaction, error = undefined) => {
   let errorMessage = `${emojis.error} `;
   if (error.response && error.response.data) {
     const apiError = error.response.data.message || error.response.data.details;
     errorMessage += `${apiError}`;
   } else {
-    errorMessage += `${error.message}`;
+    errorMessage += `${error.message ? error.message : error}`;
   }
   console.error(error);
   await interaction.editReply({
@@ -396,9 +396,10 @@ const handleCarrierMatchError = async (
 const activeSearches = new Set();
 
 class Valorant {
-  constructor(interaction, puuid) {
+  constructor(interaction, valorant) {
     this.interaction = interaction;
-    this.puuid = puuid;
+    this.puuid = valorant.puuid;
+    this.region = valorant.region;
     this.valorant = null;
   }
 
@@ -406,6 +407,8 @@ class Valorant {
     let valorant = await valorantAPI.getAccountByPUUID({
       puuid: this.puuid,
     });
+
+    console.log(valorant);
 
     if (!valorant || valorant.status !== 200) {
       valorant = null;

@@ -31,12 +31,8 @@ const CensoredLink = {
 
         if (content !== message.content) {
           await message.delete();
-          const embed = await createEmbed.embed(
-            `${emojis.error} Your [message](${message.url}) has a link, and can't be sent !`,
-            Colors.Red
-          );
 
-          await Webhook.send(
+          const webhook = await Webhook.send(
             message.channel,
             user.displayName,
             user.displayAvatarURL(),
@@ -44,6 +40,12 @@ const CensoredLink = {
             null,
             message.attachments.map((attachment) => attachment.url)
           );
+
+          const embed = await createEmbed.embed(
+            `${emojis.error} Your message contains a link and cannot be sent.`,
+            Colors.Red
+          );
+
           // await message.reply({
           //   embeds: [embed],
           //   ephemeral: true,
@@ -127,4 +129,4 @@ function isDomainAllowed(domain) {
   return domainWhitelist.has(domain);
 }
 
-module.exports = { CensoredLink };
+module.exports = { CensoredLink, extractDomain };
