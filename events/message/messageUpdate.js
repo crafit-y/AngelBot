@@ -1,4 +1,8 @@
+const { PermissionFlagsBits } = require("discord.js");
 const { CensoredLink } = require("../../functions/all/CensoredLink");
+
+const adminPermission = [PermissionFlagsBits.Administrator];
+const permissions = [PermissionFlagsBits.ManageMessages];
 
 module.exports = {
   name: "messageUpdate",
