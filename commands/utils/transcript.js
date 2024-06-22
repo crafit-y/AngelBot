@@ -2,6 +2,7 @@ const {
   ApplicationCommandOptionType,
   Colors,
   PermissionFlagsBits,
+  ApplicationCommandType,
 } = require("discord.js");
 const { createTranscript } = require("discord-html-transcripts");
 const { Normalizer } = require("../../functions/all/Normalize");
@@ -23,23 +24,38 @@ module.exports = {
       type: ApplicationCommandOptionType.Number,
       required: true,
       choices: [
-        { name: "Normal conversation ${emojis.arrow} 5 messages", value: 5 },
-        { name: "Large conversation ${emojis.arrow} 10 messages", value: 10 },
-        { name: "Very Large conversation ${emojis.arrow} 20 messages", value: 20 },
-        { name: "Big conversation ${emojis.arrow} 50 messages", value: 50 },
-        { name: "HugeEnormous conversation ${emojis.arrow} 100 messages", value: 100 },
-        { name: "Super Hug conversation ${emojis.arrow} 250 messages", value: 250 },
-        { name: "Enormous conversation ${emojis.arrow} 500 messages", value: 500 },
-        { name: "Gigantic conversation ${emojis.arrow} 750 messages", value: 750 },
+        { name: `Normal conversation ${emojis.arrow} 5 messages`, value: 5 },
+        { name: `Large conversation ${emojis.arrow} 10 messages`, value: 10 },
         {
-          name: "Colossal conversation (may cause lag) ${emojis.arrow} 1000 messages",
+          name: `Very Large conversation ${emojis.arrow} 20 messages`,
+          value: 20,
+        },
+        { name: `Big conversation ${emojis.arrow} 50 messages`, value: 50 },
+        {
+          name: `HugeEnormous conversation ${emojis.arrow} 100 messages`,
+          value: 100,
+        },
+        {
+          name: `Super Hug conversation ${emojis.arrow} 250 messages`,
+          value: 250,
+        },
+        {
+          name: `Enormous conversation ${emojis.arrow} 500 messages`,
+          value: 500,
+        },
+        {
+          name: `Gigantic conversation ${emojis.arrow} 750 messages`,
+          value: 750,
+        },
+        {
+          name: `Colossal conversation (may cause lag) ${emojis.arrow} 1000 messages`,
           value: 1000,
         },
         {
-          name: "Immense conversation (may cause lag) ${emojis.arrow} 5000 messages",
+          name: `Immense conversation (may cause lag) ${emojis.arrow} 5000 messages`,
           value: 5000,
         },
-        { name: "Entire channel (may cause lag)", value: 0 },
+        { name: `Entire channel (may cause lag)`, value: 0 },
       ],
     },
     {

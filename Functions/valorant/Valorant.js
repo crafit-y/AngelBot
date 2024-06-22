@@ -162,12 +162,8 @@ function carrierMatchField(player, status, matchData, matchScore) {
       colorLetter,
       "D",
       deaths
-    )}${separator}${formatStatLine(
-      colorLetter,
-      "A",
-      assists
-    )}${separator}${formatStatLine(colorLetter, "CS", score)}\n` +
-    `${colorStats}${kills}${separator}${colorStats}${deaths}${separator}${colorStats}${assists}${separator}${colorStats}${score}` +
+    )}${separator}${formatStatLine(colorLetter, "A", assists)}\n` +
+    `${colorStats}${kills}${separator}${colorStats}${deaths}${separator}${colorStats}${assists}` +
     "```";
   //`\`\`\`${matchData.metadata.matchid}\`\`\``;
 
@@ -187,7 +183,7 @@ function createProgressBar(
   total = 100,
   barSize = 15,
   emojiFilled = assets.ranks.line.blue.emoji,
-  emojiEmpty = assets.ranks.line.red.emoji
+  emojiEmpty = assets.ranks.line.none.emoji
 ) {
   // Calcul du nombre d'emojis remplis
   const filledSize = Math.round((value / total) * barSize);
@@ -300,7 +296,7 @@ async function createAccountEmbed(valorant, matchsMmrData) {
   let embed = new EmbedBuilder()
     .setThumbnail(image)
     .setDescription(
-      `## ${emojis.info} Fetched User \`${valorant.name}#${valorant.tag}\`` +
+      `## ${emojis.info} Player \`${valorant.name}#${valorant.tag}\`` +
         `\n> Region ${emojis.arrow} \`${valorant.region}\`` +
         `\n> Account level ${emojis.arrow} \`${valorant.account_level}\``
     )
@@ -396,10 +392,10 @@ const handleCarrierMatchError = async (
 const activeSearches = new Set();
 
 class Valorant {
-  constructor(interaction, valorant) {
+  constructor(interaction, puuid, region) {
     this.interaction = interaction;
-    this.puuid = valorant.puuid;
-    this.region = valorant.region;
+    this.puuid = puuid;
+    this.region = region || "eu";
     this.valorant = null;
   }
 
@@ -408,10 +404,9 @@ class Valorant {
       puuid: this.puuid,
     });
 
-    console.log(valorant);
-
     if (!valorant || valorant.status !== 200) {
       valorant = null;
+      console.log(this.puuid);
       await handleError(this.interaction, "Invalid response from API");
       throw new Error("Invalid response from API");
     }
@@ -551,7 +546,7 @@ class Valorant {
           winPercentage = -999;
         }
         embed.setDescription(
-          `## ${emojis.info} Fetched User carrier of \`${valorant.data.name}#${
+          `## ${emojis.info} Player carrier of \`${valorant.data.name}#${
             valorant.data.tag
           }\`\n\`\`\`ansi\n\u001b[35mWinrate: ${
             winPercentage >= 0

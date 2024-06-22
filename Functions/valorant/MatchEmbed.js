@@ -1,4 +1,11 @@
-const { EmbedBuilder, Colors, AttachmentBuilder } = require("discord.js");
+const {
+  EmbedBuilder,
+  Colors,
+  AttachmentBuilder,
+  StringSelectMenuOptionBuilder,
+  StringSelectMenuBuilder,
+  ActionRowBuilder,
+} = require("discord.js");
 const path = require("path");
 
 const ValorantAPIClient = require("../api/valorant-api");
@@ -49,10 +56,10 @@ function calculateKDA(kills, deaths, assists) {
   return kda.toFixed(1);
 }
 
-// Vous pouvez ensuite passer cette liste à
-
 let highestScore = 0;
 let bestPlayerName = "";
+
+let selectMenuOptions = [];
 
 function generatePlayerFields(player, emojiManager) {
   const { name, tag, team, party_id, character, stats, currenttier_patched } =
@@ -86,6 +93,17 @@ function generatePlayerFields(player, emojiManager) {
     currenttier_patched === "Radiant"
       ? assets.ranks.Radiant[1].emoji
       : rankEmoji;
+
+  selectMenuOptions.push(
+    new StringSelectMenuOptionBuilder()
+      .setLabel(
+        `${
+          team === "Red" ? assets.teams.red.emoji : assets.teams.blue.emoji
+        } Infos about ${emojis.arrow} ${name}#${tag}`
+      )
+      .setEmoji(agentEmoji)
+      .setValue(`${name}#${tag}`)
+  );
 
   return {
     name: `${partyEmoji}${bestPlayerEmoji}${agentEmoji}${rankEmoji}\n${name}\n#*${tag}*`,
@@ -506,25 +524,42 @@ class MatchEmbed {
           break;
       }
 
-      const imageName =
-        mode != "Deathmatch"
-          ? status != null
-            ? draw
-              ? "imgDraw"
-              : status === "win"
-              ? "imgWon"
-              : "imgLost"
-            : "name"
-          : "name";
+      let imageName;
+
+      switch (mode) {
+        case "Deathmatch":
+          imageName = "name";
+          break;
+        default:
+          imageName =
+            status != null
+              ? draw
+                ? "imgDraw"
+                : status === "win"
+                ? "imgWon"
+                : "imgLost"
+              : "name";
+          break;
+      }
 
       const imagePath = path.join(
         process.cwd(),
         assets.maps[matchData.metadata.map][imageName]
       );
+
       const attachment = new AttachmentBuilder(imagePath, { name: "Map.png" });
+
+      const selectMenu = new StringSelectMenuBuilder()
+        .setCustomId("more-infos-match-embed")
+        .setMinValues(1)
+        .setMaxValues(1)
+        .setPlaceholder("Select the player you want to get more infos");
+
+      selectMenu.addOptions(selectMenuOptions);
 
       await this.interaction.editReply({
         embeds: [matchEmbed],
+        components: [new ActionRowBuilder().addComponents(selectMenu)],
         files: [attachment],
       });
     } catch (error) {

@@ -351,9 +351,9 @@ async function getPuuid(accounts, playerTag) {
 }
 
 async function myAccountCommand(interaction, accounts, playerTag) {
-  const { puuid } = await getPuuid(accounts, playerTag);
+  const { puuid, region } = await getPuuid(accounts, playerTag);
   const valorant = new Valorant(interaction, puuid);
-  valorant.getValorantAccountInfos();
+  await valorant.getValorantAccountInfos();
 }
 
 async function lastMatchCommand(interaction, accounts, playerTag) {
@@ -364,7 +364,7 @@ async function lastMatchCommand(interaction, accounts, playerTag) {
 }
 
 async function viewCarrierCommand(interaction, accounts, playerTag) {
-  const puuid = await getPuuid(accounts, playerTag);
+  const { puuid, region } = await getPuuid(accounts, playerTag);
   const valorant = new Valorant(interaction, puuid);
-  valorant.displayLast10Matches();
+  await valorant.displayLast10Matches();
 }
