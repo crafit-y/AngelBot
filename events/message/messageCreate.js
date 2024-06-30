@@ -15,11 +15,13 @@ module.exports = {
     const memberPermissions =
       (await member.permissions.has(permissions)) ||
       (await member.permissions.has(adminPermission));
-    if (!memberPermissions) {
-      CensoredLink.findAndReplace(client, message);
+    const memberRoles = await member.roles.cache.get("1202769654733471754");
 
-      AntiSpam.check(client, message);
-    }
-    return;
+    if (!memberRoles) return;
+    if ((!memberPermissions && memberRoles) || !memberRoles) return;
+
+    CensoredLink.findAndReplace(client, message);
+
+    AntiSpam.check(client, message);
   },
 };

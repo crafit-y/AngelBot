@@ -13,6 +13,9 @@ const valorantAPI = new ValorantAPIClient(process.env.HENRIK_API_KEY);
 const MatchEmbed = require("../../functions/valorant/MatchEmbed");
 const emojis = require("../../utils/emojis.json");
 const Valorant = require("../../functions/valorant/Valorant");
+const { getLatestNews } = require("../../functions/valorant/valorantNews");
+const findAnAgent = require("../../functions/valorant/findAnAgent");
+const findASkin = require("../../functions/valorant/findASkin");
 
 const PERMISSION_ERROR_MESSAGE = `${emojis.error} You don't have permission to perform this action!`;
 const commandId = `</valorant link:${process.env.VALORANT_COMMAND_ID}>`;
@@ -128,10 +131,43 @@ module.exports = {
       ],
     },
     {
-      name: "view-shop",
-      description: "View the current store offerings in VALORANT",
+      name: "view-lastnews",
+      description: "View the last news of VALORANT",
       type: ApplicationCommandOptionType.Subcommand,
     },
+    {
+      name: "view-agent",
+      description: "View the last news of VALORANT",
+      type: ApplicationCommandOptionType.Subcommand,
+      options: [
+        {
+          name: "agent",
+          description: "Specify a agent to view infos",
+          type: ApplicationCommandOptionType.String,
+          required: true,
+          autocomplete: true,
+        },
+      ],
+    },
+    {
+      name: "view-skins",
+      description: "View the last news of VALORANT",
+      type: ApplicationCommandOptionType.Subcommand,
+      options: [
+        {
+          name: "skin-name",
+          description: "Specify a agent to view infos",
+          type: ApplicationCommandOptionType.String,
+          required: true,
+          autocomplete: true,
+        },
+      ],
+    },
+    // {
+    //   name: "view-shop",
+    //   description: "View the current store offerings in VALORANT",
+    //   type: ApplicationCommandOptionType.Subcommand,
+    // },
   ],
 
   async run(client, interaction) {
@@ -147,6 +183,8 @@ module.exports = {
     const matchIdString = interaction.options.getString("match_id");
     const user = interaction.options.getUser("member") || interaction.user;
     const accounts = await ValorantAccount.find({ discordId: user.id });
+    const agent = interaction.options.getString("agent");
+    const skin = interaction.options.getString("skin-name");
 
     try {
       switch (subcommand) {
@@ -181,9 +219,22 @@ module.exports = {
           await response(interaction, `${emojis.loading} Fetching User...`);
           await unLinkCommand(interaction, user);
           break;
+        case "view-lastnews":
+          await response(interaction, `${emojis.loading} Fetching news...`);
+          await response(interaction, `${emojis.info} Comming soon (maybe)...`);
+          //await lastNewsCommand(interaction);
+          break;
+        case "view-agent":
+          await response(interaction, `${emojis.loading} Fetching infos...`);
+          await getAgentInfosCommand(interaction, agent);
+          break;
+        case "view-skins":
+          await response(interaction, `${emojis.loading} Fetching infos...`);
+          await getSkinInfosCommand(interaction, skin);
+          break;
       }
     } catch (error) {
-      await handleError(interaction, error);
+      handleError(interaction, error);
     }
   },
 };
@@ -200,12 +251,12 @@ const checkPermissions = (interaction) => {
 const validateValorantTag = (tag) => tag.includes("#");
 
 const handleError = async (interaction, error) => {
-  let errorMessage = `${emojis.error} An error occurred`;
+  let errorMessage = `${emojis.error}`;
   if (error.response && error.response.data) {
     const apiError = error.response.data.message || error.response.data.details;
-    errorMessage += `: ${apiError}`;
+    errorMessage += ` ${apiError}`;
   } else {
-    errorMessage += `: ${error.message}`;
+    errorMessage += ` ${error.message}`;
   }
   console.error(error);
   await interaction.editReply({
@@ -222,6 +273,8 @@ async function response(interaction, message) {
 async function fetchValorantAccountDetails(playerTag) {
   const [name, tag] = playerTag.replaceAll(" ", "").split("#");
   const accountResponse = await valorantAPI.getAccount({ name, tag });
+
+  console.log(accountResponse);
 
   if (!accountResponse || accountResponse.status !== 200) {
     throw new Error(`The player ${playerTag} does not exist!`);
@@ -367,4 +420,38 @@ async function viewCarrierCommand(interaction, accounts, playerTag) {
   const { puuid, region } = await getPuuid(accounts, playerTag);
   const valorant = new Valorant(interaction, puuid);
   await valorant.displayLast10Matches();
+}
+
+async function lastNewsCommand(interaction) {
+  try {
+    const news = await getLatestNews();
+    if (news.length > 0) {
+      const latestNews = news[0];
+      await interaction.editReply({
+        embeds: [
+          {
+            title: latestNews.title,
+            url: latestNews.link,
+            description: latestNews.summary,
+            image: {
+              url: latestNews.image,
+            },
+          },
+        ],
+      });
+    } else {
+      await interaction.editReply("Aucun article récent trouvé.");
+    }
+  } catch (error) {
+    console.error(error);
+    await interaction.editReply("Erreur lors de la récupération des articles.");
+  }
+}
+
+async function getAgentInfosCommand(interaction, agent) {
+  await findAnAgent.getAgentOrAbilityInfo(interaction, agent);
+}
+
+async function getSkinInfosCommand(interaction, skin) {
+  await findASkin.getSkinInfo(interaction, skin);
 }

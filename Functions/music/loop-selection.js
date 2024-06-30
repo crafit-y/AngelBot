@@ -112,7 +112,7 @@ class LoopSelectionHandler {
         i.user.id === interaction.user.id;
       const collector = new InteractionCollector(client, {
         filter,
-        time: 5000,
+        time: 30000,
       });
 
       collector.on("collect", async (i) => {
@@ -144,12 +144,7 @@ class LoopSelectionHandler {
       collector.on("end", async (collected) => {
         if (collected.size <= 0) {
           await interaction.editReply({
-            embeds: [
-              await createEmbed.embed(
-                "Time is up. Please try again.",
-                Colors.Red
-              ),
-            ],
+            embeds: [await createEmbed.embed("Time is up.", Colors.Red)],
             components: [],
             ephemeral: true,
           });

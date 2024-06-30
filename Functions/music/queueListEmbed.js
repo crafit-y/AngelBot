@@ -126,6 +126,7 @@ class QueueEmbedManager {
       .replaceAll("'", "")
       .replaceAll("`", "")
       .replaceAll('"', "")
+      .replaceAll(".", "")
       .trim()
       .slice(0, 40);
 
@@ -173,13 +174,19 @@ class QueueEmbedManager {
 
   createEmbed(tracks) {
     const currentTrack = this.queue.currentTrack;
-    const description =
-      `### ${emojis.music} ${emojis.arrow} Playing on ${this.queue.channel}\n` +
-      `**${this.formatTitle(currentTrack)}**\n` +
-      `*- [${currentTrack.author}](${currentTrack.url}) - \`@${currentTrack.requestedBy.username}\`*` +
+    const description = [];
+    description.push(
+      `### ${emojis.music} ${emojis.arrow} ${this.formatTitle(currentTrack)}`
+    );
+    description.push(`- Playing on ${this.queue.channel}`);
+    description.push(
+      `*- [${currentTrack.author}](${currentTrack.url}) - \`@${currentTrack.requestedBy.username}\`*`
+    );
+    description.push(
       `${this.queue.node.createProgressBar()}${
         this.timeline != null ? ` (${this.timeline.timestamp?.progress}%)` : ""
-      }\n`;
+      }\n`
+    );
     const fields = tracks; //+
     // `\n${
     //   this.queue.tracks.size > pageEnd
@@ -194,7 +201,7 @@ class QueueEmbedManager {
         // .setTitle(
         //   `${emojis.music} ${emojis.arrow} Playing on ${this.queue.channel}`
         // )
-        .setDescription(description)
+        .setDescription(description.join("\n"))
         .addFields(fields)
         .setFooter({
           text: `${formatDuration(this.queue.estimatedDuration)} remaining - ${
@@ -216,7 +223,7 @@ class QueueEmbedManager {
       }
     } catch (error) {
       console.error("Error during embed refresh:", error);
-      this.handleError(error);
+      await this.handleError(error);
     }
   }
 
@@ -230,7 +237,7 @@ class QueueEmbedManager {
         this.resetCurrentPage();
       }
 
-      await new Promise((resolve) => setTimeout(resolve, 1000));
+      await new Promise((resolve) => setTimeout(resolve, 2000));
       const tracks = this.getTracksForCurrentPage();
       const embed = this.createEmbed(tracks);
       if (messageId && messageId != null) {
@@ -249,7 +256,6 @@ class QueueEmbedManager {
   }
 
   async handleError(error) {
-    console.log(error);
     const errorMessage = error === "1" ? "No music are playing" : error;
     const messageArray = {
       embeds: [

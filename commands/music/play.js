@@ -18,6 +18,7 @@ const { loopSelection } = require("../../functions/music/loop-selection");
 const { DTBM } = require("../../functions/all/DTBM");
 const emojis = require("../../utils/emojis.json");
 const { PlayASound } = require("../../functions/all/PlayASound");
+const handleQuickActionSelectMenu = require("../../functions/music/quickAction");
 
 // Module export
 module.exports = {
@@ -115,66 +116,72 @@ module.exports = {
       ],
     },
     {
-      name: "options",
+      name: "pause-resume",
+      description: "Choose an option for the music",
+      type: ApplicationCommandOptionType.Subcommand,
+    },
+    {
+      name: "skip",
+      description: "Choose an option for the music",
+      type: ApplicationCommandOptionType.Subcommand,
+    },
+    {
+      name: "quick-action",
       description: "Choose an option for the music",
       type: ApplicationCommandOptionType.Subcommand,
       options: [
         {
-          name: "selected-option",
-          description: "Selected option to send to the bot",
+          name: "track",
+          description: "The track",
           type: ApplicationCommandOptionType.String,
           required: true,
-          choices: [
-            {
-              name: `${emojis["music-pause"]} ${emojis.arrow} Pause/Resume`,
-              value: "pause-resume",
-            },
-            {
-              name: `${emojis["music-skip"]} ${emojis.arrow} Skip`,
-              value: "skip",
-            },
-            {
-              name: `${emojis["music-back"]} ${emojis.arrow} Back`,
-              value: "back",
-            },
-            {
-              name: `${emojis["music-loopQueue"]} ${emojis.arrow} Loop`,
-              value: "loop",
-            },
-            {
-              name: `${emojis["music-stop"]} ${emojis.arrow} Stop`,
-              value: "stop",
-            },
-            {
-              name: `${emojis["music-sound-max"]} ${emojis.arrow} Join`,
-              value: "join",
-            },
-            {
-              name: `${emojis["music-sound-muted"]} ${emojis.arrow} Disconnect`,
-              value: "disconnect",
-            },
-            {
-              name: `${emojis["music-queueList"]} ${emojis.arrow} Queue-list`,
-              value: "queue-list",
-            },
-          ],
+          autocomplete: true,
         },
       ],
+    },
+    {
+      name: "back",
+      description: "Choose an option for the music",
+      type: ApplicationCommandOptionType.Subcommand,
+    },
+    {
+      name: "loop",
+      description: "Choose an option for the music",
+      type: ApplicationCommandOptionType.Subcommand,
+    },
+    {
+      name: "stop",
+      description: "Choose an option for the music",
+      type: ApplicationCommandOptionType.Subcommand,
+    },
+    {
+      name: "join",
+      description: "Choose an option for the music",
+      type: ApplicationCommandOptionType.Subcommand,
+    },
+    {
+      name: "disconnect",
+      description: "Choose an option for the music",
+      type: ApplicationCommandOptionType.Subcommand,
+    },
+    {
+      name: "queue-list",
+      description: "Choose an option for the music",
+      type: ApplicationCommandOptionType.Subcommand,
     },
   ],
   run: async (client, interaction) => {
     const action = interaction.options.getSubcommand();
     const queue = useQueue(interaction.guild.id);
     const channel = interaction.member.voice.channel;
-    const choice = interaction.options.getString("selected-option");
 
     switch (action.toLowerCase()) {
       case "play":
         await interaction.deferReply();
         await handlePlayCommand(client, interaction, channel, queue);
         break;
-      case "options":
-        await interaction.deferReply({ ephemeral: choice !== "queue-list" });
+      default:
+        await interaction.deferReply({ ephemeral: action !== "queue-list" });
         await handleOptionsCommand(client, interaction, queue);
         break;
     }
@@ -354,7 +361,7 @@ async function handleOtherLink(client, channel, interaction, link) {
 
 // Function to handle the "options" command
 async function handleOptionsCommand(client, interaction, queue) {
-  const choice = interaction.options.getString("selected-option");
+  const choice = interaction.options.getSubcommand();
   const channel = interaction.member.voice.channel;
 
   if (choice === "join" || choice === "disconnect") {
@@ -433,6 +440,23 @@ async function handleOptionsCommand(client, interaction, queue) {
 
       break;
 
+    case "quick-action":
+      const trackNum = interaction.options.getString("track");
+      if (trackNum === "no-more-tracks") {
+        return;
+      } else {
+        await interaction.editReply({
+          embeds: [
+            await createEmbed.embed(`${emojis.loading} Action acknowledge...`),
+          ],
+        });
+        if (queue || queue.node.isPlaying()) {
+          await handleQuickActionSelectMenu(client, interaction, trackNum);
+        }
+      }
+
+      break;
+
     case "back":
       await interaction.editReply({
         embeds: [await createEmbed.embed(`${emojis.loading} Going back...`)],
@@ -441,7 +465,12 @@ async function handleOptionsCommand(client, interaction, queue) {
       if (queue || queue.node.isPlaying()) {
         queue.history.back().catch(async (e) => {
           return await interaction.editReply({
-            embeds: [await createEmbed.embed(`${emojis.error} ${e.message}`)],
+            embeds: [
+              await createEmbed.embed(
+                `${emojis.error} ${e.message}`,
+                Colors.Red
+              ),
+            ],
           });
         });
         await interaction.editReply({

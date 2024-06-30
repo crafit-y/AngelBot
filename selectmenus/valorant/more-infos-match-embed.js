@@ -5,18 +5,8 @@ const MatchEmbed = require("../../functions/valorant/MatchEmbed");
 const Valorant = require("../../functions/valorant/Valorant");
 
 const ValorantAPIClient = require("../../functions/api/valorant-api");
+const handleError = require("../../utils/handlers/ErrorHandler");
 const valorantAPI = new ValorantAPIClient(process.env.HENRIK_API_KEY);
-
-async function handleError(interaction) {
-  return await interaction.editReply({
-    embeds: [
-      await createEmbed.embed(
-        `${emojis.error} This player cannot be loaded.`,
-        Colors.Red
-      ),
-    ],
-  });
-}
 
 async function fetchValorantAccountDetails(playerTag) {
   const [name, tag] = playerTag.replaceAll(" ", "").split("#");
@@ -37,7 +27,7 @@ module.exports = {
     const value = interaction.values[0];
 
     if (!value) {
-      return await handleError(interaction);
+      return handleError(interaction);
     }
 
     try {
@@ -54,7 +44,7 @@ module.exports = {
       const valorant = new Valorant(interaction, puuid);
       await valorant.getValorantAccountInfos();
     } catch (error) {
-      await handleError(interaction);
+      handleError(interaction, error);
       return console.error(error);
     }
   },

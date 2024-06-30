@@ -74,7 +74,10 @@ async function fetchValorantAccount(puuid) {
   for (let i = 0; i < 3; i++) {
     // Tentatives jusqu'à 3 fois
     try {
-      const response = await valorantAPI.getAccount({ name: "Crafity", tag: "007" });
+      const response = await valorantAPI.getAccount({
+        name: "Crafity",
+        tag: "007",
+      });
       if (response.status === 200) return response; // Succès
       console.error(`Tentative ${i + 1}: Échec avec statut ${response.status}`);
     } catch (error) {
@@ -343,7 +346,7 @@ module.exports = {
                 emojis.info
               } | LOGS - Team${team} Users updated\nAdded to team ${
                 emojis.arrow
-              } <@${newMembers.join(">\nAdded to team ${emojis.arrow} <@")}>`
+              } <@${newMembers.join(`>\nAdded to team ${emojis.arrow} <@`)}>`
             );
           } catch (error) {
             console.error("Error updating teams:", error);

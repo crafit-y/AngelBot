@@ -5,6 +5,7 @@ const {
   StringSelectMenuOptionBuilder,
   StringSelectMenuBuilder,
   ActionRowBuilder,
+  ButtonStyle,
 } = require("discord.js");
 const path = require("path");
 
@@ -14,6 +15,8 @@ const valorantAPI = new ValorantAPIClient(process.env.HENRIK_API_KEY);
 const { createEmbed } = require("../all/Embeds");
 const assets = require("../../utils/valorant/assets.json");
 const emojis = require("../../utils/emojis.json");
+const { createButton } = require("../all/Buttons");
+const handleError = require("../../utils/handlers/ErrorHandler");
 
 // const commandId = `</valorant view-match:${process.env.VALORANT_COMMAND_ID}>`;
 // const commandViewMatch = `</valorant view-match:${process.env.VALORANT_COMMAND_ID}>`;
@@ -22,7 +25,7 @@ async function CarrierStringGenerator(matchsMmrData, puuid) {
   let carrierStr = [];
   let wins = 0;
   let totalMatches = 0;
-  for (let index = 0; index < matchsMmrData.length && index <= 9; index++) {
+  for (let index = 0; index < matchsMmrData.length && index <= 4; index++) {
     await new Promise((resolve) => setTimeout(resolve, 500));
     const match = matchsMmrData[index];
     const matchId = match.match_id;
@@ -312,7 +315,7 @@ async function createAccountEmbed(valorant, matchsMmrData) {
         inline: true,
       },
       {
-        name: `Carrier`,
+        name: `Carrier *(Last 5 matches)*`,
         value: `${emojis.loading} Loading MMR data...`,
         inline: true,
       },
@@ -322,20 +325,6 @@ async function createAccountEmbed(valorant, matchsMmrData) {
 
   return embed;
 }
-
-const handleError = async (interaction, error = undefined) => {
-  let errorMessage = `${emojis.error} `;
-  if (error.response && error.response.data) {
-    const apiError = error.response.data.message || error.response.data.details;
-    errorMessage += `${apiError}`;
-  } else {
-    errorMessage += `${error.message ? error.message : error}`;
-  }
-  console.error(error);
-  await interaction.editReply({
-    embeds: [await createEmbed.embed(errorMessage, Colors.Red)],
-  });
-};
 
 function timeout(ms, message = "Timed out") {
   return new Promise((resolve, reject) => {
@@ -407,7 +396,7 @@ class Valorant {
     if (!valorant || valorant.status !== 200) {
       valorant = null;
       console.log(this.puuid);
-      await handleError(this.interaction, "Invalid response from API");
+      handleError(interaction, "Invalid response from API");
       throw new Error("Invalid response from API");
     }
 
@@ -426,7 +415,7 @@ class Valorant {
         code: 1,
         type: "Throwed error",
       };
-      await handleError(this.interaction, error);
+      handleError(interaction, error);
       return;
     }
 
@@ -435,7 +424,7 @@ class Valorant {
       await this._performSearch(this.interaction);
     } catch (error) {
       console.error("Error during the search:", error);
-      await handleError(this.interaction, error);
+      handleError(interaction, error);
     } finally {
       // Nettoyage
       this.endSearch(serverId);
@@ -564,7 +553,7 @@ class Valorant {
       }
     } catch (error) {
       console.error("Error handling the displayLast10Matches function:", error);
-      await handleError(interaction, error);
+      handleError(interaction, error);
     }
   }
 
@@ -589,9 +578,31 @@ class Valorant {
 
       const matchsMmrData = matchsMmr.data;
 
+      const playerActionButtons = await createButton.create([
+        [
+          "playeractionbutton-carrier",
+          "View full carrier",
+          emojis.carrier,
+          ButtonStyle.Secondary,
+          false,
+          null,
+        ],
+        [
+          "playeractionbutton-lastmatch",
+          "Display last match",
+          emojis.time,
+          ButtonStyle.Secondary,
+          false,
+          null,
+        ],
+      ]);
+
       // Crée un embed basé sur les données récupérées
       const embed = await createAccountEmbed(valorantData, matchsMmrData);
-      const message = await interaction.editReply({ embeds: [embed] });
+      const message = await interaction.editReply({
+        embeds: [embed],
+        components: [playerActionButtons],
+      });
 
       // Calcule la chaîne de caractères du porteur et le pourcentage de victoire
       const { carrierStr, winPercentage } = await CarrierStringGenerator(
@@ -647,8 +658,8 @@ class Valorant {
 
       // Met à jour le message avec le nouvel embed
       await interaction.editReply({ embeds: [newEmbed] });
-    } catch (e) {
-      await handleError(interaction, e);
+    } catch (error) {
+      handleError(interaction, error);
     }
   }
 }

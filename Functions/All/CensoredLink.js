@@ -5,7 +5,7 @@ const { Colors } = require("discord.js");
 const emojis = require("../../utils/emojis.json");
 const IDS = require("../../utils/ids.json");
 
-const domainWhitelist = new Set(["youtube.com", "youtu.be", "tenor.com"]);
+const domainWhitelist = new Set(["youtube.com", "youtu.be", "tenor.com", "instagram.com"]);
 const specialChars =
   "!@#$%^&*()_+{}[]:\";'?><,./\\|~ÀÁÂÆÇÈÉÊËÌÍÎÏÑÒÓÔŒÙÚÛÜÝŸæçìíîïñòóôœùúûüýÿß·’“”«»•–—±×÷²³€†‡";
 const linkRegex =

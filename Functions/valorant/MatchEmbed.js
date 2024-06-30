@@ -136,6 +136,44 @@ function generatePlayerFields(player, emojiManager) {
   };
 }
 
+let i = 0;
+
+function generatePlayerDeathMatchFields(player) {
+  const { name, tag, team, party_id, character, stats, currenttier_patched } =
+    player;
+  const { kills, deaths, assists, headshots, score } = stats;
+
+  i++;
+
+  const agentEmoji =
+    assets.agentEmojis[character]?.emoji || ":white_small_square:";
+
+  const colorLetter = "\u001b[34m"; // ANSI colors for red and blue
+  const colorStats = "\u001b[33m"; // ANSI color for stats
+  const separator = `\u001b[36m|`;
+
+  selectMenuOptions.push(
+    new StringSelectMenuOptionBuilder()
+      .setLabel(`#${i} Infos about ${emojis.arrow} ${name}#${tag}`)
+      .setEmoji(agentEmoji)
+      .setValue(`${name}#${tag}`)
+  );
+
+  return {
+    name: `\`#${i}\`${agentEmoji}\n${name}\n#*${tag}*`,
+    value:
+      "```ansi\n" +
+      `${formatStatLine(colorLetter, "K", kills)}${separator}${formatStatLine(
+        colorLetter,
+        "D",
+        deaths
+      )}${separator}${formatStatLine(colorLetter, "A", assists)}\n` +
+      `${colorStats}${kills}${separator}${colorStats}${deaths}${separator}${colorStats}${assists}` +
+      "```",
+    inline: true,
+  };
+}
+
 function addInlineFields(fields) {
   // Cette fonction ajoute des champs vides pour faire en sorte que le nombre total de champs soit un multiple de trois.
   while (fields.length % 3 !== 0) {
@@ -333,40 +371,10 @@ class MatchEmbed {
       const draw =
         red.has_won === false && blue.has_won === false ? true : false;
 
-      const partys = playersData.all_players.reduce((acc, player) => {
-        if (!acc[player.party_id]) {
-          acc[player.party_id] = [];
-        }
-        acc[player.party_id].push(player.name);
-        return acc;
-      }, {});
-
-      let emojiManager = new PartyEmojiManager();
-
-      const partyList = Object.keys(partys)
-        .map((partyId, index) => {
-          const partyEmoji = emojiManager.getEmojiForPartyId(partyId);
-          return `${partyEmoji} Party ${index + 1}`;
-        })
-        .reduce((acc, item, index) => {
-          const groupIndex = Math.floor(index / 5);
-          if (!acc[groupIndex]) acc[groupIndex] = [];
-          acc[groupIndex].push(item);
-          return acc;
-        }, [])
-        .map((group) => group.join(" | "))
-        .join("\n");
-
-      matchEmbed.addFields({
-        name: `Current parties:`,
-        value: partyList || "No partys found (error)",
-        inline: false,
-      });
-
       switch (mode) {
         case "Deathmatch":
           const players = sortPlayersByScore(playersData.all_players).map((p) =>
-            generatePlayerFields(p, emojiManager)
+            generatePlayerDeathMatchFields(p)
           );
           const playersFields = addInlineFields(players);
           matchEmbed.addFields([
@@ -379,6 +387,36 @@ class MatchEmbed {
           break;
 
         default:
+          const partys = playersData.all_players.reduce((acc, player) => {
+            if (!acc[player.party_id]) {
+              acc[player.party_id] = [];
+            }
+            acc[player.party_id].push(player.name);
+            return acc;
+          }, {});
+
+          let emojiManager = new PartyEmojiManager();
+
+          const partyList = Object.keys(partys)
+            .map((partyId, index) => {
+              const partyEmoji = emojiManager.getEmojiForPartyId(partyId);
+              return `${partyEmoji} Party ${index + 1}`;
+            })
+            .reduce((acc, item, index) => {
+              const groupIndex = Math.floor(index / 5);
+              if (!acc[groupIndex]) acc[groupIndex] = [];
+              acc[groupIndex].push(item);
+              return acc;
+            }, [])
+            .map((group) => group.join(" | "))
+            .join("\n");
+
+          matchEmbed.addFields({
+            name: `Current parties:`,
+            value: partyList || "No partys found (error)",
+            inline: false,
+          });
+
           const redTeamPlayers = await sortPlayersByScore(playersData.red).map(
             (p) => generatePlayerFields(p, emojiManager)
           );
@@ -542,10 +580,16 @@ class MatchEmbed {
           break;
       }
 
-      const imagePath = path.join(
-        process.cwd(),
-        assets.maps[matchData.metadata.map][imageName]
-      );
+      const imageNamePath = assets.maps[matchData.metadata.map]
+        ? assets.maps[matchData.metadata.map][imageName]
+        : false;
+      let imagePath;
+
+      if (imageNamePath) {
+        imagePath = path.join(process.cwd(), imageNamePath);
+      } else {
+        imagePath = path.join(process.cwd(), assets.maps.Ascent.img);
+      }
 
       const attachment = new AttachmentBuilder(imagePath, { name: "Map.png" });
 

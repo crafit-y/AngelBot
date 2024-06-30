@@ -48,6 +48,18 @@ process.on("unhandledRejection", (reason, promise) => {
 // Gestion des avertissements
 process.on("warning", (warning) => Logger.warn(`WARNING: ${warning.message}`));
 
+// Écouteur pour l'événement 'error'
+player.on("error", (queue, error) => {
+  Logger.error(`ERROR OF PLAYER: ${error.message}`);
+  Logger.clientError(`QUEUE: ${queue}`);
+});
+
+// Écouteur pour l'événement 'playerError'
+player.on("playerError", (queue, error) => {
+  Logger.error(`PLAYER_ERROR: ${error.message}`);
+  Logger.clientError(`QUEUE: ${queue}`);
+});
+
 // Fonction asynchrone pour connecter à MongoDB et démarrer le client Discord
 (async () => {
   try {
