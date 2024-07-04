@@ -274,8 +274,6 @@ async function fetchValorantAccountDetails(playerTag) {
   const [name, tag] = playerTag.replaceAll(" ", "").split("#");
   const accountResponse = await valorantAPI.getAccount({ name, tag });
 
-  console.log(accountResponse);
-
   if (!accountResponse || accountResponse.status !== 200) {
     throw new Error(`The player ${playerTag} does not exist!`);
   }

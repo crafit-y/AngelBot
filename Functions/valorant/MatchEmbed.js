@@ -60,11 +60,26 @@ let highestScore = 0;
 let bestPlayerName = "";
 
 let selectMenuOptions = [];
+let i = 0;
+
+function addToSelectMenu(i, emoji, label, value) {
+  if (i > 25 || i < 0) return;
+  else {
+    selectMenuOptions.push(
+      new StringSelectMenuOptionBuilder()
+        .setLabel(label)
+        .setEmoji(emoji)
+        .setValue(`${i}-${value}`)
+    );
+  }
+}
 
 function generatePlayerFields(player, emojiManager) {
   const { name, tag, team, party_id, character, stats, currenttier_patched } =
     player;
   const { kills, deaths, assists, headshots, score } = stats;
+
+  i++;
 
   const agentEmoji =
     assets.agentEmojis[character]?.emoji || ":white_small_square:";
@@ -94,15 +109,13 @@ function generatePlayerFields(player, emojiManager) {
       ? assets.ranks.Radiant[1].emoji
       : rankEmoji;
 
-  selectMenuOptions.push(
-    new StringSelectMenuOptionBuilder()
-      .setLabel(
-        `${
-          team === "Red" ? assets.teams.red.emoji : assets.teams.blue.emoji
-        } Infos about ${emojis.arrow} ${name}#${tag}`
-      )
-      .setEmoji(agentEmoji)
-      .setValue(`${name}#${tag}`)
+  addToSelectMenu(
+    i,
+    agentEmoji,
+    `${
+      team === "Red" ? assets.teams.red.emoji : assets.teams.blue.emoji
+    } Infos about ${emojis.arrow} ${name}#${tag}`,
+    `${name}#${tag}`
   );
 
   return {
@@ -136,8 +149,6 @@ function generatePlayerFields(player, emojiManager) {
   };
 }
 
-let i = 0;
-
 function generatePlayerDeathMatchFields(player) {
   const { name, tag, team, party_id, character, stats, currenttier_patched } =
     player;
@@ -152,11 +163,11 @@ function generatePlayerDeathMatchFields(player) {
   const colorStats = "\u001b[33m"; // ANSI color for stats
   const separator = `\u001b[36m|`;
 
-  selectMenuOptions.push(
-    new StringSelectMenuOptionBuilder()
-      .setLabel(`#${i} Infos about ${emojis.arrow} ${name}#${tag}`)
-      .setEmoji(agentEmoji)
-      .setValue(`${name}#${tag}`)
+  addToSelectMenu(
+    i,
+    agentEmoji,
+    `#${i} Infos about ${emojis.arrow} ${name}#${tag}`,
+    `${name}#${tag}`
   );
 
   return {

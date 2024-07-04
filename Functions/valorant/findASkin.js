@@ -108,7 +108,7 @@ async function getSkinInfo(interaction, skinName, levelNumber, chromaNumber) {
       skinBase = base;
     } catch (error) {
       console.error("Error in getSkinInfo:", error);
-      handleError(interaction, error);;
+      handleError(interaction, error);
     }
 
     const description = [];

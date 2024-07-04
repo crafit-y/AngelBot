@@ -19,6 +19,12 @@ async function fetchValorantAccountDetails(playerTag) {
   return accountResponse;
 }
 
+function removeIndexFromString(str) {
+  // Utilisation d'une expression régulière pour trouver le motif `${i}-`
+  // L'expression régulière recherche tout jusqu'au premier tiret '-'
+  return str.replace(/^[^-]+-/, "");
+}
+
 module.exports = {
   name: "more-infos-match-embed",
   permissions: [],
@@ -31,15 +37,16 @@ module.exports = {
     }
 
     try {
+      const convertToPlayer = removeIndexFromString(value);
       await interaction.editReply({
         embeds: [
           await createEmbed.embed(
-            `${emojis.loading} Fetching player \`${value}\`...`,
+            `${emojis.loading} Fetching player \`${convertToPlayer}\`...`,
             Colors.Orange
           ),
         ],
       });
-      const player = await fetchValorantAccountDetails(value);
+      const player = await fetchValorantAccountDetails(convertToPlayer);
       const puuid = player.data.puuid;
       const valorant = new Valorant(interaction, puuid);
       await valorant.getValorantAccountInfos();

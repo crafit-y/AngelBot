@@ -395,7 +395,6 @@ class Valorant {
 
     if (!valorant || valorant.status !== 200) {
       valorant = null;
-      console.log(this.puuid);
       handleError(interaction, "Invalid response from API");
       throw new Error("Invalid response from API");
     }

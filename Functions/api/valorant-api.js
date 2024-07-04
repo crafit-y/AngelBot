@@ -24,8 +24,11 @@ module.exports = class ValorantAPIClient extends GenericAPIClient {
 
   async getMMRByPUUID({ version, region, puuid, filter } = {}) {
     this._validateParams({ version, region, puuid });
-    const endpoint = `/valorant/${version}/by-puuid/mmr/${region}/${puuid}`;
-    return await this.getResource({ endpoint, params: { filter } });
+    const query = this._buildQuery({ filter });
+    const endpoint = `/valorant/${version}/by-puuid/mmr/${region}/${puuid}${
+      query ? `?${query}` : ""
+    }`;
+    return await this.getResource({ endpoint });
   }
 
   async getMMRHistoryByPUUID({ region, puuid } = {}) {
@@ -37,6 +40,15 @@ module.exports = class ValorantAPIClient extends GenericAPIClient {
   async getMatch(match_id) {
     // Remplacer '/match/details' par le bon endpoint pour obtenir les détails d'un match
     const endpoint = `/valorant/v2/match/${match_id}`;
+    return await this.getResource({ endpoint });
+  }
+
+  async getMatches({ region, name, tag, filter, map, size } = {}) {
+    this._validateParams({ region, name, tag }, ["region", "name", "tag"]);
+    const query = this._buildQuery({ filter, map, size });
+    const endpoint = `/valorant/v3/matches/${region}/${encodeURI(
+      name
+    )}/${encodeURI(tag)}${query ? `?${query}` : ""}`;
     return await this.getResource({ endpoint });
   }
 
